@@ -18,4 +18,5 @@ public class Passenger {
     private String name;
     private String email;
     private String phoneNumber;
+    private boolean deleted = false;
 }

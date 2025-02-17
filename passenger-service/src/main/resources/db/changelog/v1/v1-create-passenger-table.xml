@@ -22,4 +22,10 @@
             </column>
         </createTable>
     </changeSet>
+    <changeSet id="v1-2" author="Razuvanau Fiodar">
+        <addColumn tableName="passenger">
+            <column name="deleted"
+                    type="boolean"/>
+        </addColumn>
+    </changeSet>
 </databaseChangeLog>
