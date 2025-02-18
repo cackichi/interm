@@ -1,5 +1,6 @@
 package org.example.services;
 
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.example.dto.PassengerDTO;
 import org.example.entities.Passenger;
@@ -13,11 +14,25 @@ public class PassengerService {
     private final PassengerRepo passengerRepo;
     private final ModelMapper modelMapper;
 
-    public void save(PassengerDTO passengerDTO){
-        passengerRepo.save(modelMapper.map(passengerDTO, Passenger.class));
+    public PassengerDTO mapToDTO(Passenger passenger){
+        return modelMapper.map(passenger, PassengerDTO.class);
     }
 
+    public Passenger mapToPass(PassengerDTO passengerDTO){
+        return modelMapper.map(passengerDTO, Passenger.class);
+    }
+
+    public Passenger save(PassengerDTO passengerDTO){
+        return  passengerRepo.save(mapToPass(passengerDTO));
+    }
+
+    @Transactional
     public void softDelete(Long id){
         passengerRepo.softDelete(id);
+    }
+
+    @Transactional
+    public void updatePass(Long id, PassengerDTO passengerDTO){
+        passengerRepo.editData(id, passengerDTO.getName(), passengerDTO.getEmail(), passengerDTO.getPhoneNumber());
     }
 }
