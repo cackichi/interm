@@ -22,6 +22,8 @@ public class Driver {
     private String phone;
     @Field("email")
     private String email;
+    @Field("deleted")
+    private boolean deleted = false;
 
     public Driver(String name, int experience, String phone, String email) {
         this.name = name;

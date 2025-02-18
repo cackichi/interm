@@ -29,8 +29,8 @@ public class DriverCarInitializerChange {
 
     @Execution
     public void execution(CarRepository carRepository, DriverRepository driverRepository) {
-        Driver driver = driverRepository.save(new Driver("Nicolas", 3, "80293554989", "nicolas@gmail.com"));
-        carRepository.save(new Car("Mersedes", "Red", driver.getId()));
+        driverRepository.save(new Driver("1", "Nicolas", 3, "80293554989", "nicolas@gmail.com", false));
+        carRepository.save(new Car("1","Mersedes", "Red", "1", false));
     }
 
     @RollbackExecution
