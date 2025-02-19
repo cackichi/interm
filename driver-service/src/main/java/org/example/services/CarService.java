@@ -36,9 +36,9 @@ public class CarService {
     }
 
     @Transactional
-    public void update(CarDTO carDTO){
+    public void update(String id, CarDTO carDTO){
         Car car = mapToCar(carDTO);
-        carRepository.update(car.getId(), car.getBrand(), car.getColor());
+        carRepository.update(id, car.getBrand(), car.getColor());
     }
 
     public List<Car> findAllNotDeleted(){

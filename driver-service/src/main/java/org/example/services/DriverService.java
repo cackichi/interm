@@ -37,9 +37,9 @@ public class DriverService {
     }
 
     @Transactional
-    public void update(DriverDTO driverDTO){
+    public void update(String id, DriverDTO driverDTO){
         Driver driver = mapToDriver(driverDTO);
-        driverRepository.update(driver.getId(), driver.getName(), driver.getExperience(), driver.getPhone(), driver.getEmail());
+        driverRepository.update(id, driver.getName(), driver.getExperience(), driver.getPhone(), driver.getEmail());
     }
 
     public List<Driver> findAllNotDeleted(){
