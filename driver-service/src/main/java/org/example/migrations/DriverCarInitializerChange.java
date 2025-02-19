@@ -29,7 +29,7 @@ public class DriverCarInitializerChange {
 
     @Execution
     public void execution(CarRepository carRepository, DriverRepository driverRepository) {
-        driverRepository.save(new Driver("1", "Nicolas", 3, "80293554989", "nicolas@gmail.com", false));
+        driverRepository.save(new Driver("1", "Nicolas", 3, "80293554989", "nicolas@gmail.com", false, "FREE"));
         carRepository.save(new Car("1","Mersedes", "Red", "1", false));
     }
 

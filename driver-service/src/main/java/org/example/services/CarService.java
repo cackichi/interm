@@ -44,4 +44,9 @@ public class CarService {
     public List<Car> findAllNotDeleted(){
         return carRepository.findAllNotDeleted();
     }
+
+    @Transactional
+    public void hardDelete(String id){
+        carRepository.deleteById(id);
+    }
 }

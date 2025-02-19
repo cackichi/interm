@@ -25,4 +25,8 @@ public interface DriverRepository extends MongoRepository<Driver, String> {
 
     @Query("{deleted: false}")
     List<Driver> findAllNotDeleted();
+
+    @Query("{ _id: ?0 }")
+    @Update("{ $set: { status: ?1 }}")
+    void updateStatus(String id, String status);
 }

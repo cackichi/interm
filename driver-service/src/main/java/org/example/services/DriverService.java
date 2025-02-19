@@ -45,4 +45,25 @@ public class DriverService {
     public List<Driver> findAllNotDeleted(){
         return driverRepository.findAllNotDeleted();
     }
+
+    @Transactional
+    public void hardDelete(String id){
+        carService.hardDelete(id);
+        driverRepository.deleteById(id);
+    }
+
+    //Отправляем запрос на получение свободной поездки
+    // (если такая имеется то обратно вернется true и статус водителя изменится на BUSY)
+    // возможно чтобы вернуть уведомление пользователю использовать feign
+    void getFreeRide(){
+
+    }
+
+    // Водитель заканчивает поездку; указывает цену за нее и оценку пассажиру
+    // Отсюда идет запрос в сервис поездки чтобы указать ее статус как завершенной
+    // Потом в сервис оплаты для установления задолженности
+    // Потом в сервис рейтинга для установки рейтинга пассажиру
+    void stopTraveling(){
+
+    }
 }

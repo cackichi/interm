@@ -37,4 +37,10 @@ public class CarController {
     public List<Car> findAll(){
         return carService.findAllNotDeleted();
     }
+
+    @DeleteMapping("/hard-delete/{driverId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void hardDelete(@PathVariable("driverId") String driverId){
+        carService.hardDelete(driverId);
+    }
 }

@@ -24,4 +24,6 @@ public interface CarRepository extends MongoRepository<Car, String> {
 
     @Query("{deleted: false}")
     List<Car> findAllNotDeleted();
+
+    void deleteByDriverId(String driverId);
 }

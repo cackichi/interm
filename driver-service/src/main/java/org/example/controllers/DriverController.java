@@ -37,4 +37,10 @@ public class DriverController {
     public List<Driver> findAll(){
         return driverService.findAllNotDeleted();
     }
+
+    @DeleteMapping("/hard-delete/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void hardDelete(@PathVariable("id") String id){
+        driverService.hardDelete(id);
+    }
 }
