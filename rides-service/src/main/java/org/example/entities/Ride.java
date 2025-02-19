@@ -18,4 +18,5 @@ public class Ride {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Status status;
+    private boolean deleted = false;
 }

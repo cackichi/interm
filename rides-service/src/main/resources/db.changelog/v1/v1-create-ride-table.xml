@@ -25,4 +25,9 @@
             </column>
         </createTable>
     </changeSet>
+    <changeSet id="v1-2" author="Razuvanau Fiodar">
+        <addColumn tableName="ride">
+            <column name="deleted" type="boolean" defaultValue="false"/>
+        </addColumn>
+    </changeSet>
 </databaseChangeLog>
