@@ -37,7 +37,7 @@ services:
     volumes:
       - ./.pg1:/var/lib/postgresql1/data
     ports:
-      - "5436:5432"
+      - "5434:5432"
     networks:
       - my_network
 
@@ -52,7 +52,7 @@ services:
     volumes:
       - ./.pg2:/var/lib/postgresql2/data
     ports:
-      - "5438:5432"
+      - "5436:5432"
     networks:
       - my_network
 
