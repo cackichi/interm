@@ -11,10 +11,8 @@
         </preConditions>
 
         <createTable tableName="ride">
-            <column name="id" type="bigint" autoIncrement="true" startWith="100" incrementBy="1">
-                <constraints primaryKey="true"/>
-            </column>
             <column name="passenger_id" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="driver_id" type="bigint">
             </column>
@@ -22,7 +20,8 @@
             </column>
             <column name="point_b" type="varchar(255)">
             </column>
-            <column name="status" type="varchar(10)">
+            <column name="status" type="varchar(10)" defaultValue="WAITING">
+                <constraints nullable="false"/>
             </column>
         </createTable>
     </changeSet>
