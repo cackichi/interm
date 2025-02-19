@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface PassengerRepo extends JpaRepository<Passenger, Long> {
     @Modifying
@@ -16,4 +18,11 @@ public interface PassengerRepo extends JpaRepository<Passenger, Long> {
     @Modifying
     @Query("UPDATE Passenger p SET p.name =:name, p.email=:email, p.phoneNumber=:phoneNumber WHERE p.id = :id")
     int editData(@Param("id") Long id, @Param("name") String name, @Param("email") String email, @Param("phoneNumber") String phoneNumber);
+
+    @Query("SELECT p FROM Passenger p WHERE p.deleted=false")
+    List<Passenger> findAllNotDeleted();
+
+    @Modifying
+    @Query("UPDATE Passenger p SET p.status = :status WHERE p.id = :id")
+    void updateStatus(@Param("status") String status,@Param("id") Long id);
 }

@@ -28,4 +28,13 @@
                     type="boolean"/>
         </addColumn>
     </changeSet>
+
+    <changeSet id="v1-3" author="Razuvanau Fiodar">
+        <addColumn tableName="passenger">
+            <column name="status"
+                    type="varchar(10)"
+                    defaultValue="NOT_ACTIVE"/>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>
