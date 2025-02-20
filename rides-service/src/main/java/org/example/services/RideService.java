@@ -1,5 +1,6 @@
 package org.example.services;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import org.example.dto.RideDTO;
 import org.example.entities.Ride;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @AllArgsConstructor
@@ -56,5 +58,10 @@ public class RideService {
     public boolean getOneWaiting(){
         Long id = rideRepository.getOneWait();
         return id != null;
+    }
+
+    public RideDTO findById(Long id){
+        Optional<Ride> ride = rideRepository.findById(id);
+        return ride.map(this::mapToDTO).orElseThrow(() -> new EntityNotFoundException("Поездка не найдена по id: " + id));
     }
 }

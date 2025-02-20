@@ -13,10 +13,11 @@ public class Ride {
     @Id
     private Long passengerId;
     private Long driverId;
+    @Column(name = "point_a")
     private String pointA;
+    @Column(name = "point_b")
     private String pointB;
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     private Status status;
     private boolean deleted = false;
 }
