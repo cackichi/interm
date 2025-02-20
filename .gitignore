@@ -22,6 +22,10 @@ target/
 .kafka
 .keycloak
 redisdata
+.mongodb
+mongodb-data
+.pg3
+.pg4
 
 ### Eclipse ###
 .apt_generated
