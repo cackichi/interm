@@ -15,7 +15,7 @@
             <column name="passenger_id" type="bigint">
                 <constraints primaryKey="true"/>
             </column>
-            <column name="average_rating" type="NUMERIC(1,5)">
+            <column name="average_rating" type="NUMERIC">
             </column>
             <column name="rating_count" type="bigint">
             </column>
@@ -27,7 +27,7 @@
             <column name="driver_id" type="bigint">
                 <constraints primaryKey="true"/>
             </column>
-            <column name="average_rating" type="NUMERIC(1,5)">
+            <column name="average_rating" type="NUMERIC">
             </column>
             <column name="rating_count" type="bigint">
             </column>

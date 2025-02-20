@@ -25,20 +25,20 @@ public class DriverRatingService {
         return modelMapper.map(driverRating, DriverRatingDTO.class);
     }
 
-    private double findRating(Long id){
+    public double findRating(Long id){
         return driverRatingRepository.findRating(id).map(DriverRating::getAverageRating).orElseThrow(() ->new EntityNotFoundException("Запись не найдена"));
     }
 
     @Transactional
-    private void updateRating(Long id, double rating){
+    public void updateRating(Long id, double rating){
         driverRatingRepository.updateRating(id, rating);
     }
 
-    private List<DriverRating> findAllNotDeleted(){
+    public List<DriverRating> findAllNotDeleted(){
         return driverRatingRepository.findAllNotDeleted();
     }
 
-    private void create(DriverRatingDTO dto){
+    public void create(DriverRatingDTO dto){
         driverRatingRepository.save(mapToRating(dto));
     }
 

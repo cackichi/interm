@@ -17,7 +17,7 @@ public interface PassengerRatingRepository extends JpaRepository<PassengerRating
     void softDelete(@Param("id") Long id);
     @Modifying
     @Query(value = "MERGE INTO passenger_rating pr\n" +
-            "USING (SELECT :passengerId, :rating) src\n" +
+            "USING (SELECT :passengerId AS passengerId, :rating AS rating) src\n" +
             "ON (pr.passenger_id = src.passengerId)\n" +
             "WHEN MATCHED THEN\n" +
             "    UPDATE SET \n" +
@@ -31,6 +31,6 @@ public interface PassengerRatingRepository extends JpaRepository<PassengerRating
     @Query("SELECT pr FROM PassengerRating pr WHERE pr.deleted = false")
     List<PassengerRating> findAllNotDeleted();
 
-    @Query("SELECT pr FROM PassengerRating pr WHERE pr.passengerId = :passengerId")
+    @Query("SELECT pr FROM PassengerRating pr WHERE pr.passengerId = :passengerId AND pr.deleted = false")
     Optional<PassengerRating> findRating(@Param("passengerId") Long id);
 }

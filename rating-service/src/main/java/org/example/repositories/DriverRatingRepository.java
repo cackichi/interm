@@ -17,7 +17,7 @@ public interface DriverRatingRepository extends JpaRepository<DriverRating, Long
     void softDelete(@Param("id") Long id);
     @Modifying
     @Query(value = "MERGE INTO driver_rating dr\n" +
-            "USING (SELECT :driverId, :rating) src\n" +
+            "USING (SELECT :driverId AS driverId, :rating AS rating) src\n" +
             "ON (dr.driver_id = src.driverId)\n" +
             "WHEN MATCHED THEN\n" +
             "    UPDATE SET \n" +
@@ -31,6 +31,6 @@ public interface DriverRatingRepository extends JpaRepository<DriverRating, Long
     @Query("SELECT dr FROM DriverRating dr WHERE dr.deleted = false")
     List<DriverRating> findAllNotDeleted();
 
-    @Query("SELECT dr FROM DriverRating dr WHERE dr.driverId = :driverId")
+    @Query("SELECT dr FROM DriverRating dr WHERE dr.driverId = :driverId AND dr.deleted = false")
     Optional<DriverRating> findRating(@Param("driverId") Long id);
 }
