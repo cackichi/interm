@@ -1,0 +1,42 @@
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
+
+    <changeSet id="v1-1" author="Razuvanau Fiodar">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="payment"/>
+                <tableExists tableName="balance"/>
+            </not>
+        </preConditions>
+
+        <createTable tableName="payment">
+            <column name="id" type="bigint" startWith="100" autoIncrement="true" incrementBy="1">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="passenger_id" type="bigint">
+            </column>
+            <column name="ride_id" type="bigint">
+            </column>
+            <column name="cost" type="NUMERIC">
+            </column>
+            <column name="status" type="varchar(10)" defaultValue="WAITING">
+            </column>
+            <column name="deleted" type="boolean" defaultValue="false">
+            </column>
+        </createTable>
+
+        <createTable tableName="balance">
+            <column name="passenger_id" type="bigint">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="balance" type="NUMERIC">
+            </column>
+            <column name="time_last_deposit" type="timestamp without time zone">
+            </column>
+            <column name="deleted" type="boolean" defaultValue="false">
+            </column>
+        </createTable>
+    </changeSet>
+</databaseChangeLog>
