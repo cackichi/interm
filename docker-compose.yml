@@ -1,30 +1,14 @@
 services:
-  mongo:
-    image: mongo
-    restart: always
-    container_name: mongo
-    ports:
-      - 27017:27017
+  mongodb:
+    image: mongo:latest
+    container_name: "mongodb"
     environment:
       MONGO_INITDB_ROOT_USERNAME: fedor
       MONGO_INITDB_ROOT_PASSWORD: fedor
-    networks:
-      - my_network
-
-  mongo-express:
-    image: mongo-express
-    restart: always
     ports:
-      - 5051:5051
-    environment:
-      ME_CONFIG_MONGODB_ADMINUSERNAME: fedor
-      ME_CONFIG_MONGODB_ADMINPASSWORD: fedor
-      ME_CONFIG_BASICAUTH: true
-      ME_CONFIG_BASICAUTH_USERNAME: fedor
-      ME_CONFIG_BASICAUTH_PASSWORD: fedor
-      ME_CONFIG_MONGODB_URL: mongodb://fedor:fedor@mongo:27017/
-    networks:
-      - my_network
+      - 27017:27017
+    volumes:
+      - ./mongodb-data:/data/db
 
   pg1:
     image: postgres
@@ -37,7 +21,7 @@ services:
     volumes:
       - ./.pg1:/var/lib/postgresql1/data
     ports:
-      - "5436:5432"
+      - "5434:5432"
     networks:
       - my_network
 
@@ -52,7 +36,7 @@ services:
     volumes:
       - ./.pg2:/var/lib/postgresql2/data
     ports:
-      - "5438:5432"
+      - "5436:5432"
     networks:
       - my_network
 
@@ -218,13 +202,43 @@ services:
     stdin_open: true
     networks:
       - my_network
+  pg3:
+    image: postgres
+    container_name: pg3
+
+    environment:
+      POSTGRES_USER: fedor
+      POSTGRES_PASSWORD: fedor
+      POSTGRES_DB: pg3
+    volumes:
+      - ./.pg3:/var/lib/postgresql3/data
+    ports:
+      - "5438:5432"
+    networks:
+      - my_network
+
+  pg4:
+    image: postgres
+    container_name: pg4
+
+    environment:
+      POSTGRES_USER: fedor
+      POSTGRES_PASSWORD: fedor
+      POSTGRES_DB: pg4
+    volumes:
+      - ./.pg4:/var/lib/postgresql4/data
+    ports:
+      - "5442:5432"
+    networks:
+      - my_network
 
 volumes:
-  mongo:
+  mongodb:
   pg1:
   pg2:
-  mongo-express:
   redis:
+  pg4:
+  pg3:
 
 networks:
   my_network:
