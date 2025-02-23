@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import org.example.dto.BalanceDTO;
 import org.example.entities.Balance;
 import org.example.repositories.BalanceRepository;
+import org.hibernate.id.IdentifierGenerationException;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,6 +45,7 @@ public class BalanceService {
     }
 
     public void create(BalanceDTO balanceDTO){
+        if(balanceDTO.getPassengerId() == null) throw new IdentifierGenerationException("Вы не указали идентификатор пассажира");
         balanceRepository.save(mapToBalance(balanceDTO));
     }
 }

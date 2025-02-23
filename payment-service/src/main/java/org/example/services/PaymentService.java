@@ -9,6 +9,7 @@ import org.example.dto.PaymentDTO;
 import org.example.entities.Balance;
 import org.example.entities.Payment;
 import org.example.entities.Status;
+import org.example.exceptions.CreatePaymentException;
 import org.example.exceptions.InsufficientBalanceException;
 import org.example.repositories.PaymentRepository;
 import org.modelmapper.ModelMapper;
@@ -33,9 +34,10 @@ public class PaymentService {
         return modelMapper.map(payment, PaymentDTO.class);
     }
 
-    public void create(PaymentDTO paymentDTO){
+    @Transactional
+    public void create(PaymentDTO paymentDTO) throws CreatePaymentException {
         paymentDTO.setStatus(Status.WAITING);
-        paymentRepository.save(mapToPayment(paymentDTO));
+        if(paymentRepository.createIfNoPaidPayments(paymentDTO.getPassengerId(), paymentDTO.getRideId(), paymentDTO.getCost()) == 0) throw new CreatePaymentException("У вас есть неоплаченные платежи");
     }
 
     @Transactional
@@ -52,7 +54,9 @@ public class PaymentService {
         );
         balanceQuery.setParameter("passengerId", passengerId);
 
-        Payment payment = paymentQuery.getSingleResult();
+        Payment payment = paymentQuery.getResultList().stream()
+                .findFirst()
+                .orElseThrow(() -> new EntityNotFoundException("Нет не оплаченных платежей"));
         Balance balance = balanceQuery.getSingleResult();
 
         if (balance.getBalance() >= payment.getCost()) {
