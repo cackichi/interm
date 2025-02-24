@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import org.example.PassengerServiceApplication;
 import org.example.dto.PassengerDTO;
 import org.example.entities.Passenger;
+import org.example.entities.Status;
 import org.example.repositories.PassengerRepo;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
@@ -26,6 +27,7 @@ public class PassengerService {
     }
 
     public Passenger save(PassengerDTO passengerDTO){
+        passengerDTO.setStatus(Status.NOT_ACTIVE);
         return  passengerRepo.save(mapToPass(passengerDTO));
     }
 

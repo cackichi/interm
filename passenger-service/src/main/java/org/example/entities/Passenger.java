@@ -20,6 +20,5 @@ public class Passenger {
     private String phoneNumber;
     private boolean deleted = false;
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     private Status status;
 }

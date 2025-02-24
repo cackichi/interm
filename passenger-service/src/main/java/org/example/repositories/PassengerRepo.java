@@ -16,9 +16,17 @@ public interface PassengerRepo extends JpaRepository<Passenger, Long> {
     void softDelete(@Param("id") Long id);
 
     @Modifying
-    @Query("UPDATE Passenger p SET p.name =:name, p.email=:email, p.phoneNumber=:phoneNumber WHERE p.id = :id")
-    int editData(@Param("id") Long id, @Param("name") String name, @Param("email") String email, @Param("phoneNumber") String phoneNumber);
-
+    @Query("UPDATE Passenger p " +
+            "SET p.name = CASE WHEN :name IS NOT NULL THEN :name ELSE p.name END, " +
+            "    p.email = CASE WHEN :email IS NOT NULL THEN :email ELSE p.email END, " +
+            "    p.phoneNumber = CASE WHEN :phoneNumber IS NOT NULL THEN :phoneNumber ELSE p.phoneNumber END " +
+            "WHERE p.id = :id")
+    void editData(
+            @Param("id") Long id,
+            @Param("name") String name,
+            @Param("email") String email,
+            @Param("phoneNumber") String phoneNumber
+    );
     @Query("SELECT p FROM Passenger p WHERE p.deleted=false")
     List<Passenger> findAllNotDeleted();
 
