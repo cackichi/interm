@@ -13,8 +13,9 @@ import org.springframework.data.mongodb.core.mapping.Field;
 public class DriverDTO {
     private String id;
     private String name;
-    private int experience;
+    private Integer experience;
     private String phone;
     private String email;
     private boolean deleted = false;
+    private String status;
 }

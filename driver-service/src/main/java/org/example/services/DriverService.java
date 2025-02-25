@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @AllArgsConstructor
@@ -27,6 +28,7 @@ public class DriverService {
 
     public void create(DriverDTO driverDTO){
         Driver driver = mapToDriver(driverDTO);
+        driver.setStatus("FREE");
         driverRepository.save(driver);
     }
 
@@ -38,8 +40,10 @@ public class DriverService {
 
     @Transactional
     public void update(String id, DriverDTO driverDTO){
-        Driver driver = mapToDriver(driverDTO);
-        driverRepository.update(id, driver.getName(), driver.getExperience(), driver.getPhone(), driver.getEmail());
+        Optional<Driver> driverOptional = driverRepository.findById(id);
+        Driver existingDriver = driverOptional.orElseThrow();
+        modelMapper.map(driverDTO, existingDriver);
+        driverRepository.save(existingDriver);
     }
 
     public List<Driver> findAllNotDeleted(){

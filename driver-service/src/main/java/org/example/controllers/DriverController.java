@@ -5,6 +5,7 @@ import org.example.collections.Driver;
 import org.example.dto.DriverDTO;
 import org.example.services.DriverService;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,8 +18,10 @@ public class DriverController {
 
     @PostMapping("/create")
     @ResponseStatus(HttpStatus.CREATED)
-    public void create(@RequestBody DriverDTO driverDTO){
+    public ResponseEntity<String> create(@RequestBody DriverDTO driverDTO){
+        if(driverDTO.getId() == null) return ResponseEntity.badRequest().body("Укажите id!");
         driverService.create(driverDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @PatchMapping("/edit/{id}")

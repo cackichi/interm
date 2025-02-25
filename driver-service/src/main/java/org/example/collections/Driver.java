@@ -17,7 +17,7 @@ public class Driver {
     @Field("name")
     private String name;
     @Field("experience")
-    private int experience;
+    private Integer experience;
     @Field("phone")
     private String phone;
     @Field("email")
