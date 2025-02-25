@@ -19,14 +19,9 @@ public class RideController {
     private final RideService rideService;
 
     @PostMapping("/create")
-    public ResponseEntity<String> create(@RequestBody RideDTO rideDTO){
-        try {
-            if(rideDTO.getPassengerId() == null) throw new IdentifierGenerationException("Вы не задали id!");
+    @ResponseStatus(HttpStatus.CREATED)
+    public void create(@RequestBody RideDTO rideDTO){
             rideService.create(rideDTO);
-            return ResponseEntity.status(HttpStatus.CREATED).build();
-        } catch (IdentifierGenerationException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
     }
 
     @GetMapping("/find/{id}")

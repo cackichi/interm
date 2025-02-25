@@ -10,6 +10,7 @@ import org.example.entities.Status;
 @Getter
 @Setter
 public class RideDTO {
+    private Long id;
     private Long passengerId;
     private Long driverId;
     private String pointA;

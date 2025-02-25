@@ -11,6 +11,8 @@ import lombok.*;
 @Builder
 public class Ride {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
     private Long passengerId;
     private Long driverId;
     @Column(name = "point_a")
