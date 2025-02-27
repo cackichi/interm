@@ -201,35 +201,6 @@ services:
     stdin_open: true
     networks:
       - my_network
-  pg3:
-    image: postgres
-    container_name: pg3
-
-    environment:
-      POSTGRES_USER: fedor
-      POSTGRES_PASSWORD: fedor
-      POSTGRES_DB: pg3
-    volumes:
-      - ./.pg3:/var/lib/postgresql3/data
-    ports:
-      - "5438:5432"
-    networks:
-      - my_network
-
-  pg4:
-    image: postgres
-    container_name: pg4
-
-    environment:
-      POSTGRES_USER: fedor
-      POSTGRES_PASSWORD: fedor
-      POSTGRES_DB: pg4
-    volumes:
-      - ./.pg4:/var/lib/postgresql4/data
-    ports:
-      - "5442:5432"
-    networks:
-      - my_network
 
   pg3:
     image: postgres
