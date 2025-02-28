@@ -9,9 +9,6 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
-public class CarDTO {
-    private String number;
-    private String brand;
-    private String color;
-    private boolean deleted;
+public class ErrorResponse {
+    private String message;
 }

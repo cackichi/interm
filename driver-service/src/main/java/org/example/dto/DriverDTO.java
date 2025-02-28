@@ -4,7 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.data.mongodb.core.mapping.Field;
+import org.example.collections.Car;
+
+import java.util.List;
 
 @Getter
 @Setter
@@ -18,4 +20,5 @@ public class DriverDTO {
     private String email;
     private boolean deleted = false;
     private String status;
+    private List<Car> cars;
 }

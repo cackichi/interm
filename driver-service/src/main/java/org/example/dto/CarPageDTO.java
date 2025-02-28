@@ -5,13 +5,16 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
-public class CarDTO {
-    private String number;
-    private String brand;
-    private String color;
-    private boolean deleted;
+public class CarPageDTO {
+    private List<CarDTO> cars;
+    private long totalElements;
+    private int totalPages;
+    private int size;
+    private int number;
 }

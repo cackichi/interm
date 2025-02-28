@@ -3,20 +3,24 @@ package org.example.services;
 import lombok.AllArgsConstructor;
 import org.example.collections.Driver;
 import org.example.dto.DriverDTO;
+import org.example.dto.DriverPageDTO;
+import org.example.exceptions.NotFoundException;
 import org.example.repositories.DriverRepository;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
 public class DriverService {
     private final DriverRepository driverRepository;
     private final ModelMapper modelMapper;
-    private final CarService carService;
 
     public Driver mapToDriver(DriverDTO driverDTO){
         return modelMapper.map(driverDTO, Driver.class);
@@ -34,7 +38,6 @@ public class DriverService {
 
     @Transactional
     public void softDelete(String id){
-        carService.softDelete(id);
         driverRepository.softDelete(id);
     }
 
@@ -46,13 +49,28 @@ public class DriverService {
         driverRepository.save(existingDriver);
     }
 
-    public List<Driver> findAllNotDeleted(){
-        return driverRepository.findAllNotDeleted();
+    public DriverPageDTO findAllNotDeleted(Pageable pageable){
+        Page<Driver> driversPage = driverRepository.findAllNotDeleted(pageable);
+
+        List<DriverDTO> driverDTOs = driversPage.getContent().stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
+
+        return new DriverPageDTO(
+                driverDTOs,
+                driversPage.getTotalElements(),
+                driversPage.getTotalPages(),
+                pageable.getPageSize(),
+                pageable.getPageNumber()
+        );
+    }
+
+    public DriverDTO findById(String id) throws NotFoundException{
+        return driverRepository.findById(id).map(this::mapToDTO).orElseThrow(() -> new NotFoundException("Такой водитель не найден"));
     }
 
     @Transactional
     public void hardDelete(String id){
-        carService.hardDelete(id);
         driverRepository.deleteById(id);
     }
 
