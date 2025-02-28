@@ -3,9 +3,11 @@ package org.example.services;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import org.example.dto.RideDTO;
+import org.example.dto.RidePageDTO;
 import org.example.entities.Ride;
 import org.example.repositories.RideRepository;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,8 +47,23 @@ public class RideService {
         rideRepository.deleteById(id);
     }
 
-    public List<Ride> findAllNotDeleted(){
-        return rideRepository.findAllNotDeleted();
+    public RidePageDTO findAllNotDeleted(Pageable pageable){
+        List<Ride> rides =  rideRepository.findAllNotDeleted();
+        int totalRides = rides.size();
+        int start = Math.toIntExact(pageable.getOffset());
+        int end = Math.min(start + pageable.getPageSize(), totalRides);
+
+        List<RideDTO> rideDTOs = rides.subList(start, end).stream()
+                .map(this::mapToDTO)
+                .toList();
+
+        return new RidePageDTO(
+                rideDTOs,
+                totalRides,
+                (int) Math.ceil((double) totalRides / pageable.getPageSize()),
+                pageable.getPageSize(),
+                pageable.getPageNumber()
+        );
     }
 
     // Обновляем статус поездки после взаимодействия водителя

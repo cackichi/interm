@@ -11,7 +11,8 @@ import lombok.*;
 @Builder
 public class Ride {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "ride_seq")
+    @SequenceGenerator(name = "ride_seq", sequenceName = "ride_seq", initialValue = 100, allocationSize = 1)
     private Long id;
     private Long passengerId;
     private Long driverId;
