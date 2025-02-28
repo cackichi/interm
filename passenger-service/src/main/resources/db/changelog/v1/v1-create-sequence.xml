@@ -1,0 +1,21 @@
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
+
+    <changeSet id="v1-4" author="Razuvanau Fiodar">
+        <createSequence sequenceName="seq_passenger_id" startValue="100" incrementBy="1"/>
+    </changeSet>
+
+    <changeSet id="v1-5" author="Razuvanau Fiodar">
+        <modifyDataType
+                tableName="passenger"
+                columnName="id"
+                newDataType="bigint"/>
+
+        <addNotNullConstraint
+                tableName="passenger"
+                columnName="id"/>
+    </changeSet>
+
+</databaseChangeLog>

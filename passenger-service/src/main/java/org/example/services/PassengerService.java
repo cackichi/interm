@@ -1,15 +1,16 @@
 package org.example.services;
 
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
-import org.example.PassengerServiceApplication;
 import org.example.dto.PassengerDTO;
+import org.example.dto.PassengerPageDTO;
 import org.example.entities.Passenger;
 import org.example.entities.Status;
 import org.example.repositories.PassengerRepo;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
 
 @Service
@@ -46,8 +47,29 @@ public class PassengerService {
         passengerRepo.deleteById(id);
     }
 
-    public List<Passenger> findAllNotDeleted(){
-        return passengerRepo.findAllNotDeleted();
+    public PassengerPageDTO findAllNotDeleted(Pageable pageable){
+        List<Passenger> passengers = passengerRepo.findAllNotDeleted();
+        int totalPassengers = passengers.size();
+        int start = Math.toIntExact(pageable.getOffset());
+        int end = Math.min(start + pageable.getPageSize(), totalPassengers);
+
+        List<PassengerDTO> passengerDTOs = passengers.subList(start, end).stream()
+                .map(this::mapToDTO)
+                .toList();
+
+        return new PassengerPageDTO(
+                passengerDTOs,
+                totalPassengers,
+                (int) Math.ceil((double) totalPassengers / pageable.getPageSize()),
+                pageable.getPageSize(),
+                pageable.getPageNumber()
+        );
+    }
+
+    public PassengerDTO findOne(Long id){
+        return passengerRepo.findById(id)
+                .map(this::mapToDTO)
+                .orElseThrow(() -> new EntityNotFoundException("Пассажир с таким идентификатором не найден"));
     }
 
     //Функция для отправки запроса в сервис поездок

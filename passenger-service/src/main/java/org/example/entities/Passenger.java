@@ -13,7 +13,8 @@ import lombok.Setter;
 @Setter
 public class Passenger {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_passenger_id")
+    @SequenceGenerator(sequenceName = "seq_passenger_id", name = "seq_passenger_id", allocationSize = 1, initialValue = 100)
     private Long id;
     private String name;
     private String email;
