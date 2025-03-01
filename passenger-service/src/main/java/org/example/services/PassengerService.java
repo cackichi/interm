@@ -3,6 +3,7 @@ package org.example.services;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.example.dto.PassengerDTO;
 import org.example.dto.PassengerPageDTO;
 import org.example.entities.Passenger;
@@ -10,14 +11,19 @@ import org.example.entities.Status;
 import org.example.repositories.PassengerRepo;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Pageable;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Service;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @AllArgsConstructor
+@Log4j2
 public class PassengerService {
     private final PassengerRepo passengerRepo;
     private final ModelMapper modelMapper;
+    private final KafkaTemplate<String, PassengerDTO> kafkaTemplate;
 
     public PassengerDTO mapToDTO(Passenger passenger){
         return modelMapper.map(passenger, PassengerDTO.class);
@@ -29,12 +35,15 @@ public class PassengerService {
 
     public Passenger save(PassengerDTO passengerDTO){
         passengerDTO.setStatus(Status.NOT_ACTIVE);
-        return  passengerRepo.save(mapToPass(passengerDTO));
+        Passenger passenger = passengerRepo.save(mapToPass(passengerDTO)) ;
+        createPassengerEvent(passenger.getId());
+        return passenger;
     }
 
     @Transactional
     public void softDelete(Long id){
         passengerRepo.softDelete(id);
+        softDeletePassengerEvent(id);
     }
 
     @Transactional
@@ -45,6 +54,7 @@ public class PassengerService {
     @Transactional
     public void hardDelete(Long id){
         passengerRepo.deleteById(id);
+        hardDeletePassengerEvent(id);
     }
 
     public PassengerPageDTO findAllNotDeleted(Pageable pageable){
@@ -72,18 +82,56 @@ public class PassengerService {
                 .orElseThrow(() -> new EntityNotFoundException("Пассажир с таким идентификатором не найден"));
     }
 
-    //Функция для отправки запроса в сервис поездок
-    //(меняем статуc пассажира на WAITING и создаем в сервисе поездок запись со статусов FREE)
-    public void orderTaxi(){
+    public void orderTaxi(Long id){
+        CompletableFuture<SendResult<String, PassengerDTO>> future = kafkaTemplate.send("order-taxi-event-topic", String.valueOf(id), new PassengerDTO(id));
 
+        future.whenComplete((result, exception) -> {
+            if(exception != null){
+                log.error("Field to send message: {}", exception.getMessage());
+            } else {
+                log.info("Order taxi topic work successfully: {}", result.getRecordMetadata());
+            }
+        });
     }
-    //Запрос в сервис оплаты(можно заказать новое такси только если все оплачено)(Возможно feign чтобы оповестить пассажира)
-    public void checkDebt(){
 
+    @Transactional
+    public boolean checkExistsAndStatus(Long id) {
+        return passengerRepo.updateStatus(Status.WAITING, id, Status.NOT_ACTIVE) > 0;
     }
 
-    //Запрос в сервис оплаты(Оплата задолженности + прикрепляем рейтинг за поездку)
-    public void pay(){
+    public void createPassengerEvent(Long id){
+        CompletableFuture<SendResult<String, PassengerDTO>> future = kafkaTemplate.send("passenger-create-event-topic", String.valueOf(id), new PassengerDTO(id));
 
+        future.whenComplete((result, exception) -> {
+            if(exception != null){
+              log.error("Field to send message: {}", exception.getMessage());
+            } else {
+               log.info("Create topic work successfully: {}", result.getRecordMetadata());
+            }
+        });
+    }
+
+    public void hardDeletePassengerEvent(Long id){
+        CompletableFuture<SendResult<String, PassengerDTO>> future = kafkaTemplate.send("passenger-hard-delete-event-topic", String.valueOf(id), new PassengerDTO(id));
+
+        future.whenComplete((result, exception) -> {
+            if(exception != null){
+                log.error("Field to send message: {}", exception.getMessage());
+            } else {
+                log.info("Hard delete topic topic work successfully: {}", result.getRecordMetadata());
+            }
+        });
+    }
+
+    public void softDeletePassengerEvent(Long id){
+        CompletableFuture<SendResult<String, PassengerDTO>> future = kafkaTemplate.send("passenger-soft-delete-event-topic", String.valueOf(id), new PassengerDTO(id));
+
+        future.whenComplete((result, exception) -> {
+            if(exception != null){
+                log.error("Field to send message: {}", exception.getMessage());
+            } else {
+                log.info("Soft delete topic work successfully: {}", result.getRecordMetadata());
+            }
+        });
     }
 }
