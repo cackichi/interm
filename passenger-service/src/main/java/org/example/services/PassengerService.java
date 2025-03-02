@@ -134,4 +134,9 @@ public class PassengerService {
             }
         });
     }
+
+    @Transactional
+    public void travelEventUpdate(Status newStatus, Long id){
+        passengerRepo.updateBecauseOfTravel(newStatus, id);
+    }
 }

@@ -34,4 +34,8 @@ public interface PassengerRepo extends JpaRepository<Passenger, Long> {
     @Modifying
     @Query("UPDATE Passenger p SET p.status = :newStatus WHERE p.id = :id AND p.status = :currentStatus")
     int updateStatus(@Param("newStatus") Status newStatus,@Param("id") Long id, @Param("currentStatus") Status currentStatus);
+
+    @Modifying
+    @Query("UPDATE Passenger p SET p.status = :newStatus WHERE p.id = :passengerId")
+    void updateBecauseOfTravel(@Param("newStatus") Status newStatus, @Param("passengerId") Long passengerId);
 }
