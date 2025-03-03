@@ -5,6 +5,9 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Builder
 @Setter
 @Getter
@@ -26,6 +29,13 @@ public class Driver {
     private boolean deleted = false;
     @Field("status")
     private String status;
+    @Field("cars")
+    private List<Car> cars = new ArrayList<>();
+
+    public void addCar(String id, String brand, String color) {
+        Car car = new Car(id ,brand, color, false);
+        this.cars.add(car);
+    }
 
     public Driver(String name, int experience, String phone, String email) {
         this.name = name;
