@@ -1,26 +1,33 @@
 package org.example.services;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.example.collections.Driver;
 import org.example.dto.DriverDTO;
 import org.example.dto.DriverPageDTO;
+import org.example.exceptions.BusyDriverException;
 import org.example.exceptions.NotFoundException;
 import org.example.repositories.DriverRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
+@Log4j2
 public class DriverService {
     private final DriverRepository driverRepository;
     private final ModelMapper modelMapper;
+    private final KafkaTemplate<String, DriverDTO> kafkaTemplate;
 
     public Driver mapToDriver(DriverDTO driverDTO){
         return modelMapper.map(driverDTO, Driver.class);
@@ -33,20 +40,33 @@ public class DriverService {
     public void create(DriverDTO driverDTO){
         Driver driver = mapToDriver(driverDTO);
         driver.setStatus("FREE");
-        driverRepository.save(driver);
+        Driver savedDriver = driverRepository.save(driver);
+        driverCreateEvent(savedDriver.getId());
     }
 
     @Transactional
     public void softDelete(String id){
         driverRepository.softDelete(id);
+        driverSoftDeleteEvent(id);
     }
 
     @Transactional
-    public void update(String id, DriverDTO driverDTO){
+    public void update(String id, DriverDTO driverDTO) throws NotFoundException{
         Optional<Driver> driverOptional = driverRepository.findById(id);
-        Driver existingDriver = driverOptional.orElseThrow();
+        Driver existingDriver = driverOptional.orElseThrow(() -> new NotFoundException("Такой водитель не найден"));
         modelMapper.map(driverDTO, existingDriver);
         driverRepository.save(existingDriver);
+    }
+
+    @Transactional
+    public void updateStatus(String id, String status) throws NotFoundException, BusyDriverException {
+        Optional<Driver> driverOptional = driverRepository.findById(id);
+        Driver existingDriver = driverOptional.orElseThrow(() -> new NotFoundException("Такой водитель не найден"));
+        if(!existingDriver.getStatus().equals("FREE")) throw new BusyDriverException("Водитель в поездке");
+        else {
+            existingDriver.setStatus(status);
+            driverRepository.save(existingDriver);
+        }
     }
 
     public DriverPageDTO findAllNotDeleted(Pageable pageable){
@@ -72,20 +92,59 @@ public class DriverService {
     @Transactional
     public void hardDelete(String id){
         driverRepository.deleteById(id);
+        driverHardDeleteEvent(id);
     }
 
-    //Отправляем запрос на получение свободной поездки
-    // (если такая имеется то обратно вернется true и статус водителя изменится на BUSY)
-    // возможно чтобы вернуть уведомление пользователю использовать feign
-    void getFreeRide(){
+    void driverCreateEvent(String id){
+        CompletableFuture<SendResult<String, DriverDTO>> future = kafkaTemplate.send("driver-create-event-topic", id,new DriverDTO(id));
 
+        future.whenComplete((result, exception) -> {
+            if(exception != null){
+                log.error("Field to send message: {}", exception.getMessage());
+            } else {
+                log.info("Create topic work successfully: {}", result.getRecordMetadata());
+            }
+        });
     }
 
-    // Водитель заканчивает поездку; указывает цену за нее и оценку пассажиру
-    // Отсюда идет запрос в сервис поездки чтобы указать ее статус как завершенной
-    // Потом в сервис оплаты для установления задолженности
-    // Потом в сервис рейтинга для установки рейтинга пассажиру
-    void stopTraveling(){
+    void driverHardDeleteEvent(String id){
+        CompletableFuture<SendResult<String, DriverDTO>> future = kafkaTemplate.send("driver-hard-delete-event-topic", id, new DriverDTO(id));
 
+        future.whenComplete((result, exception) -> {
+            if(exception != null){
+                log.error("Field to send message: {}", exception.getMessage());
+            } else {
+                log.info("Hard delete topic work successfully: {}", result.getRecordMetadata());
+            }
+        });
+    }
+
+    void driverSoftDeleteEvent(String id){
+        CompletableFuture<SendResult<String, DriverDTO>> future = kafkaTemplate.send("driver-soft-delete-event-topic", id, new DriverDTO(id));
+
+        future.whenComplete((result, exception) -> {
+            if(exception != null){
+                log.error("Field to send message: {}", exception.getMessage());
+            } else {
+                log.info("Soft delete topic work successfully: {}", result.getRecordMetadata());
+            }
+        });
+    }
+
+    void driverValidEvent(String id){
+        try {
+            updateStatus(id, "BUSY");
+            CompletableFuture<SendResult<String, DriverDTO>> future = kafkaTemplate.send("driver-valid-event-topic", id, new DriverDTO(id));
+
+            future.whenComplete((result, exception) -> {
+                if(exception != null){
+                    log.error("Field to send message: {}", exception.getMessage());
+                } else {
+                    log.info("Valid topic work successfully: {}", result.getRecordMetadata());
+                }
+            });
+        } catch (NotFoundException | BusyDriverException e) {
+            log.error("Logic error: {}", e.getMessage());
+        }
     }
 }

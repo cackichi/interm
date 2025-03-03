@@ -40,7 +40,10 @@ public class DriverController {
         try {
             driverService.update(String.valueOf(id), driverDTO);
             return ResponseEntity.status(HttpStatus.OK).build();
-        } catch (Exception e) {
+        } catch (NotFoundException e){
+            return ResponseEntity.notFound().build();
+        }
+        catch (Exception e) {
             ErrorResponse errorResponse = new ErrorResponse(e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }

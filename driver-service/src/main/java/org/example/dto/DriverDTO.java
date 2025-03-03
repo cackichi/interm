@@ -21,4 +21,8 @@ public class DriverDTO {
     private boolean deleted = false;
     private String status;
     private List<Car> cars;
+
+    public DriverDTO(String id) {
+        this.id = id;
+    }
 }
