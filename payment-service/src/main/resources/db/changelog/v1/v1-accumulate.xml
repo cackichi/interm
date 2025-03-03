@@ -4,5 +4,6 @@
    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
 
     <include file="v1-create-table-payment.xml" relativeToChangelogFile="true"/>
+    <include file="v1-create-sequence.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

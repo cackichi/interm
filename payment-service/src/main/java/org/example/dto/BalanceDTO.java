@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -14,6 +15,6 @@ import java.time.LocalDate;
 public class BalanceDTO {
     private Long passengerId;
     private double balance;
-    private LocalDate timeLastDeposit;
+    private LocalDateTime timeLastDeposit;
     private boolean deleted = false;
 }

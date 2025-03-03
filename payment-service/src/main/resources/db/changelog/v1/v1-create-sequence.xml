@@ -1,0 +1,13 @@
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
+
+    <changeSet id="v1-2" author="Razuvanau Fiodar">
+        <modifyDataType tableName="payment" columnName="id" newDataType="int"/>
+        <addNotNullConstraint tableName="payment" columnName="id"/>
+    </changeSet>
+    <changeSet id="v1-3" author="Razuvanau Fiodar">
+        <createSequence sequenceName="payment_seq" startValue="100" incrementBy="1"/>
+    </changeSet>
+</databaseChangeLog>

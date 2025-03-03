@@ -6,6 +6,7 @@ import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
 import lombok.AllArgsConstructor;
 import org.example.dto.PaymentDTO;
+import org.example.dto.PaymentPageDTO;
 import org.example.entities.Balance;
 import org.example.entities.Payment;
 import org.example.entities.Status;
@@ -13,6 +14,7 @@ import org.example.exceptions.CreatePaymentException;
 import org.example.exceptions.InsufficientBalanceException;
 import org.example.repositories.PaymentRepository;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -75,8 +77,23 @@ public class PaymentService {
         return paymentRepository.getUnpaid(passengerId).map(this::mapToDTO).orElseThrow(() -> new EntityNotFoundException("Не найдено не оплаченых"));
     }
 
-    public List<Payment> getPaid(Long passengerId){
-        return paymentRepository.getPaid(passengerId);
+    public PaymentPageDTO getPaid(Long passengerId, Pageable pageable){
+        List<Payment> paidPayments = paymentRepository.getPaid(passengerId);
+        int totalPayments = paidPayments.size();
+        int start = Math.toIntExact(pageable.getOffset());
+        int end = Math.min(start + pageable.getPageSize(), totalPayments);
+
+        List<PaymentDTO> paymentDTOs = paidPayments.subList(start, end).stream()
+                .map(this::mapToDTO)
+                .toList();
+
+        return new PaymentPageDTO(
+                paymentDTOs,
+                totalPayments,
+                (int) Math.ceil((double) totalPayments / pageable.getPageSize()),
+                pageable.getPageSize(),
+                pageable.getPageNumber()
+        );
     }
 
     @Transactional
