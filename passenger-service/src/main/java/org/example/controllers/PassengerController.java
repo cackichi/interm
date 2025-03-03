@@ -6,6 +6,7 @@ import org.example.dto.ErrorResponse;
 import org.example.dto.PassengerDTO;
 import org.example.dto.PassengerPageDTO;
 import org.example.entities.Passenger;
+import org.example.exceptions.OrderTaxiException;
 import org.example.services.PassengerService;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -71,6 +72,19 @@ public class PassengerController {
             return ResponseEntity.notFound().build();
         } catch (Exception e){
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @PatchMapping("/order-taxi/{passengerId}")
+    public ResponseEntity<ErrorResponse> orderTaxi(@PathVariable("passengerId") Long id){
+        try{
+            if(!passengerService.checkExistsAndStatus(id)) throw new OrderTaxiException("Пассажира с таким айди не существует либо он уже в поездке");
+            passengerService.orderTaxi(id);
+            return ResponseEntity.status(HttpStatus.OK).body(new ErrorResponse("Запрос на создание заявки на поездку отправлен, ожидайте пока водитель примет ее"));
+        } catch (OrderTaxiException e){
+            return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ErrorResponse(e.getMessage()));
         }
     }
 }

@@ -1,6 +1,7 @@
 package org.example.repositories;
 
 import org.example.entities.Passenger;
+import org.example.entities.Status;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -31,6 +32,10 @@ public interface PassengerRepo extends JpaRepository<Passenger, Long> {
     List<Passenger> findAllNotDeleted();
 
     @Modifying
-    @Query("UPDATE Passenger p SET p.status = :status WHERE p.id = :id")
-    void updateStatus(@Param("status") String status,@Param("id") Long id);
+    @Query("UPDATE Passenger p SET p.status = :newStatus WHERE p.id = :id AND p.status = :currentStatus")
+    int updateStatus(@Param("newStatus") Status newStatus,@Param("id") Long id, @Param("currentStatus") Status currentStatus);
+
+    @Modifying
+    @Query("UPDATE Passenger p SET p.status = :newStatus WHERE p.id = :passengerId")
+    void updateBecauseOfTravel(@Param("newStatus") Status newStatus, @Param("passengerId") Long passengerId);
 }

@@ -17,4 +17,8 @@ public class PassengerDTO {
     private String phoneNumber;
     private boolean deleted;
     private Status status;
+
+    public PassengerDTO(Long id) {
+        this.id = id;
+    }
 }
