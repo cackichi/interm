@@ -13,4 +13,6 @@ public class TravelEvent {
     private double ratingForPassenger;
     private Long rideId;
     private String driverId;
+    private String pointA;
+    private String pointB;
 }

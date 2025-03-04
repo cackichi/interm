@@ -1,6 +1,5 @@
 package org.example.controllers;
 
-import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import org.example.dto.ErrorResponse;
 import org.example.dto.RideDTO;
