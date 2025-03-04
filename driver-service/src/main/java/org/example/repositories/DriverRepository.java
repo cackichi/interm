@@ -31,7 +31,7 @@ public interface DriverRepository extends MongoRepository<Driver, String> {
 
     @Query("{ _id: ?0 }")
     @Update("{ $set: { status: ?1 }}")
-    void updateStatus(String id, String status);
+    int updateStatus(String id, String status);
 
     @Query(value = "{ _id: ?1 , $pull: { cars: { number: ?0 } } }", fields = "cars")
     void removeCarFromDriver(String brand, String driverId);

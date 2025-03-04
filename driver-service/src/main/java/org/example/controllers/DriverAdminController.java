@@ -2,7 +2,7 @@ package org.example.controllers;
 
 import lombok.AllArgsConstructor;
 import org.example.dto.ErrorResponse;
-import org.example.services.DriverService;
+import org.example.services.DriverServiceImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,12 +11,12 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/admin/drivers")
 @AllArgsConstructor
 public class DriverAdminController {
-    private final DriverService driverService;
+    private final DriverServiceImpl driverServiceImpl;
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public ResponseEntity<ErrorResponse> hardDelete(@PathVariable("id") String id){
         try {
-            driverService.hardDelete(id);
+            driverServiceImpl.hardDelete(id);
             return ResponseEntity.noContent().build();
         } catch (Exception e) {
             ErrorResponse errorResponse = new ErrorResponse(e.getMessage());
