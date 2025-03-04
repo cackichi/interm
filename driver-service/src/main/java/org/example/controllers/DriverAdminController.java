@@ -15,12 +15,7 @@ public class DriverAdminController {
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public ResponseEntity<ErrorResponse> hardDelete(@PathVariable("id") String id){
-        try {
             driverServiceImpl.hardDelete(id);
             return ResponseEntity.noContent().build();
-        } catch (Exception e) {
-            ErrorResponse errorResponse = new ErrorResponse(e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
-        }
     }
 }

@@ -25,39 +25,21 @@ public class DriverController {
             ErrorResponse errorResponse = new ErrorResponse("Укажите id!");
             return ResponseEntity.badRequest().body(errorResponse);
         }
-        try{
-            driverServiceImpl.create(driverDTO);
-            return ResponseEntity.status(HttpStatus.CREATED).build();
-        } catch (Exception e){
-            ErrorResponse errorResponse = new ErrorResponse(e.getMessage());
-            return ResponseEntity.badRequest().body(errorResponse);
-        }
+        driverServiceImpl.create(driverDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @PatchMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public ResponseEntity<ErrorResponse> edit(@RequestBody DriverDTO driverDTO, @PathVariable("id") String id){
-        try {
-            driverServiceImpl.update(String.valueOf(id), driverDTO);
-            return ResponseEntity.status(HttpStatus.OK).build();
-        } catch (NotFoundException e){
-            return ResponseEntity.notFound().build();
-        }
-        catch (Exception e) {
-            ErrorResponse errorResponse = new ErrorResponse(e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
-        }
+    public ResponseEntity<ErrorResponse> edit(@RequestBody DriverDTO driverDTO, @PathVariable("id") String id) throws NotFoundException {
+        driverServiceImpl.update(String.valueOf(id), driverDTO);
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ErrorResponse> delete(@PathVariable("id") String id){
-        try {
-            driverServiceImpl.softDelete(id);
-            return ResponseEntity.noContent().build();
-        } catch (Exception e) {
-            ErrorResponse errorResponse = new ErrorResponse(e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
-        }
+        driverServiceImpl.softDelete(id);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping
@@ -65,22 +47,14 @@ public class DriverController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ){
-        try {
-            Pageable pageable = PageRequest.of(page, size);
-            DriverPageDTO driverPageDTO = driverServiceImpl.findAllNotDeleted(pageable);
-            return ResponseEntity.ok(driverPageDTO);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        Pageable pageable = PageRequest.of(page, size);
+        DriverPageDTO driverPageDTO = driverServiceImpl.findAllNotDeleted(pageable);
+        return ResponseEntity.ok(driverPageDTO);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<DriverDTO> findDriver(@PathVariable("id") String id){
-        try{
-            return ResponseEntity.ok(driverServiceImpl.findById(id));
-        } catch (NotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
+    public ResponseEntity<DriverDTO> findDriver(@PathVariable("id") String id) throws NotFoundException {
+        return ResponseEntity.ok(driverServiceImpl.findById(id));
     }
 
     @GetMapping("/{id}/cars")
@@ -89,29 +63,20 @@ public class DriverController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
-            Pageable pageable = PageRequest.of(page, size);
-            CarPageDTO carPageDTO = carServiceImpl.findCars(driverId, pageable);
-            return ResponseEntity.ok(carPageDTO);
+        Pageable pageable = PageRequest.of(page, size);
+        CarPageDTO carPageDTO = carServiceImpl.findCars(driverId, pageable);
+        return ResponseEntity.ok(carPageDTO);
     }
 
     @DeleteMapping("/{driverId}/car/{number}")
     public ResponseEntity<ErrorResponse> deleteCar(@PathVariable("driverId") String id, @PathVariable("number") String number){
-        try {
-            carServiceImpl.removeCarFromDriver(id, number);
-            return ResponseEntity.noContent().build();
-        } catch (Exception e) {
-            ErrorResponse errorResponse = new ErrorResponse(e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
-        }
+        carServiceImpl.removeCarFromDriver(id, number);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/{driverId}/car/{number}")
-    public ResponseEntity<CarDTO> findCar(@PathVariable("driverId") String id, @PathVariable("number") String number){
-        try{
-            return ResponseEntity.ok(carServiceImpl.findCar(id, number));
-        } catch (NotFoundException e){
-            return ResponseEntity.notFound().build();
-        }
+    public ResponseEntity<CarDTO> findCar(@PathVariable("driverId") String id, @PathVariable("number") String number) throws NotFoundException {
+        return ResponseEntity.ok(carServiceImpl.findCar(id, number));
     }
 
     @PostMapping("/{driverId}/car")
@@ -120,24 +85,13 @@ public class DriverController {
             ErrorResponse errorResponse = new ErrorResponse("Укажите id!");
             return ResponseEntity.badRequest().body(errorResponse);
         }
-        try{
-            carServiceImpl.create(driverId, carDTO);
-            return ResponseEntity.status(HttpStatus.CREATED).build();
-        } catch (Exception e){
-            ErrorResponse errorResponse = new ErrorResponse(e.getMessage());
-            return ResponseEntity.badRequest().body(errorResponse);
-        }
+        carServiceImpl.create(driverId, carDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @PatchMapping("/{driverId}/car")
     public ResponseEntity<ErrorResponse> updateCar(@PathVariable("driverId") String driverId, @RequestBody CarDTO carDTO) {
-        try{
-            carServiceImpl.updateCar(driverId, carDTO);
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-        } catch (Exception e){
-            ErrorResponse errorResponse = new ErrorResponse(e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
-        }
+        carServiceImpl.updateCar(driverId, carDTO);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
-
 }

@@ -25,7 +25,6 @@ public class DriverEventHandler {
 
     @KafkaListener(topics = "check-driver-event-topic")
     public void handleStartTravel(TravelEvent travelEvent){
-        System.out.println(travelEvent.getDriverId());
         if(travelEvent.getDriverId() == null) throw new NonRetryableException("Non retryable exception - passegner id is null");
         driverServiceImpl.driverValidEvent(travelEvent.getDriverId());
     }
