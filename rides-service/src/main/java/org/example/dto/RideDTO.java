@@ -12,8 +12,9 @@ import org.example.entities.Status;
 public class RideDTO {
     private Long id;
     private Long passengerId;
-    private Long driverId;
+    private String driverId;
     private String pointA;
     private String pointB;
     private Status status;
+    private boolean deleted;
 }

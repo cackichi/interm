@@ -5,6 +5,9 @@ import lombok.AllArgsConstructor;
 import org.example.dto.ErrorResponse;
 import org.example.dto.RideDTO;
 import org.example.dto.RidePageDTO;
+import org.example.exceptions.InvalidRatingException;
+import org.example.exceptions.NegativeCostException;
+import org.example.exceptions.NoWaitingRideException;
 import org.example.services.RideService;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -20,43 +23,25 @@ public class RideController {
 
     @PostMapping
     public ResponseEntity<ErrorResponse> create(@RequestBody RideDTO rideDTO){
-        try {
-            rideService.create(rideDTO);
-            return ResponseEntity.noContent().build();
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ErrorResponse(e.getMessage()));
-        }
+        rideService.create(rideDTO);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<RideDTO> findById(@PathVariable("id") Long id){
-        try {
-            return ResponseEntity.ok(rideService.findById(id));
-        } catch (EntityNotFoundException e){
-            return ResponseEntity.notFound().build();
-        } catch (Exception e){
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        return ResponseEntity.ok(rideService.findById(id));
     }
 
     @PatchMapping("/{id}")
     public ResponseEntity<ErrorResponse> edit(@PathVariable("id") Long id, @RequestBody RideDTO rideDTO){
-        try {
-            rideService.update(id, rideDTO);
-            return ResponseEntity.noContent().build();
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ErrorResponse(e.getMessage()));
-        }
+        rideService.update(id, rideDTO);
+        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ErrorResponse> softDelete(@PathVariable("id") Long id){
-        try {
-            rideService.softDelete(id);
-            return ResponseEntity.noContent().build();
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ErrorResponse(e.getMessage()));
-        }
+        rideService.softDelete(id);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping
@@ -65,10 +50,24 @@ public class RideController {
             @RequestParam(value = "size", defaultValue = "10") int size
     ){
         Pageable pageable = PageRequest.of(page, size);
-        try {
-            return ResponseEntity.ok(rideService.findAllNotDeleted(pageable));
-        } catch (Exception e){
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        return ResponseEntity.ok(rideService.findAllNotDeleted(pageable));
+    }
+
+    @PatchMapping("/start/{driverId}")
+    public ResponseEntity<ErrorResponse> driverStartTravel(@PathVariable("driverId") String driverId) throws NoWaitingRideException {
+        rideService.checkFreeRide(driverId);
+        return ResponseEntity.status(HttpStatus.OK).body(new ErrorResponse("Поездка найдена, запрос на проверку id водителя отправлен"));
+    }
+
+    @PatchMapping("/stop/{driverId}")
+    public ResponseEntity<ErrorResponse> driverStopTravel(
+            @PathVariable("driverId") String driverId,
+            @RequestParam("rating") double passengerRating,
+            @RequestParam("cost") double costOfRide
+    ) throws InvalidRatingException, NegativeCostException {
+        if(passengerRating < 0 || passengerRating > 5) throw new InvalidRatingException("Рейтинг должен быть в пределах [0,5]");
+        if(costOfRide <= 0) throw new NegativeCostException("Цена должна быть больше 0");
+        rideService.stopTravel(driverId, passengerRating, costOfRide);
+        return ResponseEntity.status(HttpStatus.OK).body(new ErrorResponse("Процесс завершения поездки начат"));
     }
 }

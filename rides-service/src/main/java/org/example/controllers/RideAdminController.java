@@ -15,11 +15,7 @@ public class RideAdminController {
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public ResponseEntity<ErrorResponse> hardDelete(@PathVariable("id") Long id){
-        try {
-            rideService.hardDelete(id);
-            return ResponseEntity.noContent().build();
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ErrorResponse(e.getMessage()));
-        }
+        rideService.hardDelete(id);
+        return ResponseEntity.noContent().build();
     }
 }
