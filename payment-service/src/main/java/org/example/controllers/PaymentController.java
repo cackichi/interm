@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import org.example.dto.ErrorResponse;
 import org.example.dto.PaymentDTO;
 import org.example.dto.PaymentPageDTO;
-import org.example.exceptions.CreatePaymentException;
 import org.example.exceptions.InsufficientBalanceException;
 import org.example.services.PaymentService;
 import org.springframework.data.domain.PageRequest;
@@ -25,8 +24,6 @@ public class PaymentController {
         try {
             paymentService.create(paymentDTO);
             return ResponseEntity.status(HttpStatus.CREATED).build();
-        } catch (CreatePaymentException e) {
-            return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ErrorResponse(e.getMessage()));
         }
@@ -45,10 +42,15 @@ public class PaymentController {
     }
 
     @GetMapping("/unpaid/{passengerId}")
-    public ResponseEntity<PaymentDTO> getUnpaid(@PathVariable("passengerId") Long passengerId){
+    public ResponseEntity<PaymentPageDTO> getUnpaid(
+            @PathVariable("passengerId") Long passengerId,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size
+    ){
         try {
-            PaymentDTO paymentDTO = paymentService.getUnpaid(passengerId);
-            return ResponseEntity.status(HttpStatus.OK).body(paymentDTO);
+            Pageable pageable = PageRequest.of(page, size);
+            PaymentPageDTO paymentPageDTO = paymentService.getUnpaid(passengerId, pageable);
+            return ResponseEntity.status(HttpStatus.OK).body(paymentPageDTO);
         } catch (EntityNotFoundException e){
             return ResponseEntity.notFound().build();
         } catch (Exception e) {
