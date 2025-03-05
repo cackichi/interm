@@ -1,6 +1,5 @@
 package org.example.controllers;
 
-import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import org.example.dto.ErrorResponse;
 import org.example.dto.PaymentDTO;
@@ -20,25 +19,15 @@ public class PaymentController {
     private final PaymentService paymentService;
 
     @PostMapping
-    public ResponseEntity<ErrorResponse> create(@RequestBody PaymentDTO paymentDTO){
-        try {
-            paymentService.create(paymentDTO);
-            return ResponseEntity.status(HttpStatus.CREATED).build();
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ErrorResponse(e.getMessage()));
-        }
+    public ResponseEntity<ErrorResponse> create(@RequestBody PaymentDTO paymentDTO) {
+        paymentService.create(paymentDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @PatchMapping("/close/{passengerId}")
-    public ResponseEntity<ErrorResponse> closePayment(@PathVariable("passengerId") Long passengerId){
-        try {
-            paymentService.closePayment(passengerId);
-            return ResponseEntity.noContent().build();
-        } catch (InsufficientBalanceException | EntityNotFoundException e) {
-            return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ErrorResponse(e.getMessage()));
-        }
+    public ResponseEntity<ErrorResponse> closePayment(@PathVariable("passengerId") Long passengerId) throws InsufficientBalanceException {
+        paymentService.closePayment(passengerId);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/unpaid/{passengerId}")
@@ -46,16 +35,10 @@ public class PaymentController {
             @PathVariable("passengerId") Long passengerId,
             @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "size", defaultValue = "10") int size
-    ){
-        try {
-            Pageable pageable = PageRequest.of(page, size);
-            PaymentPageDTO paymentPageDTO = paymentService.getUnpaid(passengerId, pageable);
-            return ResponseEntity.status(HttpStatus.OK).body(paymentPageDTO);
-        } catch (EntityNotFoundException e){
-            return ResponseEntity.notFound().build();
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+    ) {
+        Pageable pageable = PageRequest.of(page, size);
+        PaymentPageDTO paymentPageDTO = paymentService.getUnpaid(passengerId, pageable);
+        return ResponseEntity.status(HttpStatus.OK).body(paymentPageDTO);
     }
 
     @GetMapping("/paid/{passengerId}")
@@ -63,22 +46,14 @@ public class PaymentController {
             @PathVariable("passengerId") Long passengerId,
             @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "size", defaultValue = "10") int size
-    ){
-        try {
-            Pageable pageable = PageRequest.of(page, size);
-            return ResponseEntity.ok(paymentService.getPaid(passengerId, pageable));
-        } catch (Exception e){
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+    ) {
+        Pageable pageable = PageRequest.of(page, size);
+        return ResponseEntity.ok(paymentService.getPaid(passengerId, pageable));
     }
 
     @DeleteMapping("/{passengerId}")
-    public ResponseEntity<ErrorResponse> softDelete(@PathVariable("passengerId") Long passengerId){
-        try {
-            paymentService.softDelete(passengerId);
-            return ResponseEntity.noContent().build();
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ErrorResponse(e.getMessage()));
-        }
+    public ResponseEntity<ErrorResponse> softDelete(@PathVariable("passengerId") Long passengerId) {
+        paymentService.softDelete(passengerId);
+        return ResponseEntity.noContent().build();
     }
 }
