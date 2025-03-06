@@ -1,6 +1,5 @@
 package org.example.controllers;
 
-import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import org.example.dto.DriverRatingDTO;
 import org.example.dto.ErrorResponse;
@@ -18,51 +17,29 @@ public class DriverRatingController {
     private final DriverRatingService driverRatingService;
 
     @GetMapping("/{id}")
-    public ResponseEntity<ErrorResponse> findRating(@PathVariable("id") String id){
-        try {
-            return ResponseEntity.ok(new ErrorResponse("Рейтинг водителя с id" + ":" + id + " = " + driverRatingService.findRating(id)));
-        } catch (EntityNotFoundException e){
-            return ResponseEntity.notFound().build();
-        } catch (Exception e){
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ErrorResponse(e.getMessage()));
-        }
+    public ResponseEntity<ErrorResponse> findRating(@PathVariable("id") String id) {
+        return ResponseEntity.ok(new ErrorResponse("Рейтинг водителя с id" + ":" + id + " = " + driverRatingService.findRating(id)));
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ErrorResponse> updateRating(@PathVariable("id") String id, @RequestParam("rating") double rating){
-        try {
-            if(rating < 0 || rating > 5) throw new RatingInvalidException("Рейтинг должен быть в диапазоне 0-5");
-            driverRatingService.updateOrSaveRating(id, rating);
-            return ResponseEntity.noContent().build();
-        } catch (RatingInvalidException e){
-            return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
-        } catch (Exception e){
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ErrorResponse(e.getMessage()));
-        }
+    public ResponseEntity<HttpStatus> updateRating(@PathVariable("id") String id, @RequestParam("rating") double rating) throws RatingInvalidException {
+        if (rating < 0 || rating > 5) throw new RatingInvalidException("Рейтинг должен быть в диапазоне 0-5");
+        driverRatingService.updateOrSaveRating(id, rating);
+        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ErrorResponse> softDelete(@PathVariable("id") String id){
-        try{
-            driverRatingService.softDelete(id);
-            return ResponseEntity.noContent().build();
-        } catch (Exception e){
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ErrorResponse(e.getMessage()));
-        }
+    public ResponseEntity<HttpStatus> softDelete(@PathVariable("id") String id) {
+        driverRatingService.softDelete(id);
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping
-    public ResponseEntity<ErrorResponse> create(@RequestBody DriverRatingDTO dto){
+    public ResponseEntity<HttpStatus> create(@RequestBody DriverRatingDTO dto) throws RatingInvalidException {
         double avg = dto.getAverageRating();
-        try {
-            if(avg < 0 || avg > 5) throw new RatingInvalidException("Рейтинг должен быть в диапазоне 0-5");
-            if(dto.getDriverId() == null) throw new IdentifierGenerationException("Вы не указали id!");
-            driverRatingService.create(dto);
-            return ResponseEntity.status(HttpStatus.CREATED).build();
-        } catch (RatingInvalidException | IdentifierGenerationException e){
-            return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
-        } catch (Exception e){
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ErrorResponse(e.getMessage()));
-        }
+        if (avg < 0 || avg > 5) throw new RatingInvalidException("Рейтинг должен быть в диапазоне 0-5");
+        if (dto.getDriverId() == null) throw new IdentifierGenerationException("Вы не указали id!");
+        driverRatingService.create(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 }
