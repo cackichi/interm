@@ -1,54 +1,25 @@
 package org.example.services;
 
-import jakarta.persistence.EntityNotFoundException;
-import lombok.AllArgsConstructor;
 import org.example.dto.DriverRatingDTO;
 import org.example.entities.DriverRating;
-import org.example.repositories.DriverRatingRepository;
-import org.modelmapper.ModelMapper;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-@Service
-@AllArgsConstructor
-public class DriverRatingService {
-    private final DriverRatingRepository driverRatingRepository;
-    private final ModelMapper modelMapper;
+public interface DriverRatingService {
 
-    public DriverRating mapToRating(DriverRatingDTO dto){
-        return modelMapper.map(dto, DriverRating.class);
-    }
+    DriverRating mapToRating(DriverRatingDTO dto);
 
-    public DriverRatingDTO mapToDTO(DriverRating driverRating){
-        return modelMapper.map(driverRating, DriverRatingDTO.class);
-    }
+    DriverRatingDTO mapToDTO(DriverRating driverRating);
 
-    public double findRating(Long id){
-        return driverRatingRepository.findRating(id).map(DriverRating::getAverageRating).orElseThrow(() ->new EntityNotFoundException("Запись не найдена"));
-    }
+    double findRating(String id);
 
-    @Transactional
-    public void updateRating(Long id, double rating){
-        driverRatingRepository.updateRating(id, rating);
-    }
+    void updateOrSaveRating(String id, double rating);
 
-    public List<DriverRating> findAllNotDeleted(){
-        return driverRatingRepository.findAllNotDeleted();
-    }
+    List<DriverRating> findAllNotDeleted();
 
-    public void create(DriverRatingDTO dto){
-        driverRatingRepository.save(mapToRating(dto));
-    }
+    void create(DriverRatingDTO dto);
 
-    @Transactional
-    public void softDelete(Long id){
-        driverRatingRepository.softDelete(id);
-    }
+    void softDelete(String id);
 
-    @Transactional
-    public void hardDelete(Long id){
-        driverRatingRepository.deleteById(id);
-    }
+    void hardDelete(String id);
 }

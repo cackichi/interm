@@ -15,7 +15,7 @@ public class AdminRatingController {
     private final DriverRatingService driverRatingService;
     private final PassengerRatingService passengerRatingService;
     @DeleteMapping("/drivers/rating/{id}")
-    public ResponseEntity<ErrorResponse> hardDeleteDriverRating(@PathVariable("id") Long id){
+    public ResponseEntity<ErrorResponse> hardDeleteDriverRating(@PathVariable("id") String id){
         try{
             driverRatingService.hardDelete(id);
             return ResponseEntity.noContent().build();

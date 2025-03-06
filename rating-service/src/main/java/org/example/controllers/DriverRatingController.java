@@ -18,7 +18,7 @@ public class DriverRatingController {
     private final DriverRatingService driverRatingService;
 
     @GetMapping("/{id}")
-    public ResponseEntity<ErrorResponse> findRating(@PathVariable("id") Long id){
+    public ResponseEntity<ErrorResponse> findRating(@PathVariable("id") String id){
         try {
             return ResponseEntity.ok(new ErrorResponse("Рейтинг водителя с id" + ":" + id + " = " + driverRatingService.findRating(id)));
         } catch (EntityNotFoundException e){
@@ -29,10 +29,10 @@ public class DriverRatingController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ErrorResponse> updateRating(@PathVariable("id") Long id, @RequestParam("rating") double rating){
+    public ResponseEntity<ErrorResponse> updateRating(@PathVariable("id") String id, @RequestParam("rating") double rating){
         try {
             if(rating < 0 || rating > 5) throw new RatingInvalidException("Рейтинг должен быть в диапазоне 0-5");
-            driverRatingService.updateRating(id, rating);
+            driverRatingService.updateOrSaveRating(id, rating);
             return ResponseEntity.noContent().build();
         } catch (RatingInvalidException e){
             return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
@@ -42,7 +42,7 @@ public class DriverRatingController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ErrorResponse> softDelete(@PathVariable("id") Long id){
+    public ResponseEntity<ErrorResponse> softDelete(@PathVariable("id") String id){
         try{
             driverRatingService.softDelete(id);
             return ResponseEntity.noContent().build();

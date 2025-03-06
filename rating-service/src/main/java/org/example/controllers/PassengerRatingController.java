@@ -32,7 +32,7 @@ public class PassengerRatingController {
     public ResponseEntity<ErrorResponse> updateRating(@PathVariable("id") Long id, @RequestParam("rating") double rating){
         try {
             if(rating < 0 || rating > 5) throw new RatingInvalidException("Рейтинг должен быть в диапазоне 0-5");
-            passengerRatingService.updateRating(id, rating);
+            passengerRatingService.updateOrSaveRating(id, rating);
             return ResponseEntity.noContent().build();
         } catch (RatingInvalidException e){
             return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));

@@ -3,6 +3,7 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
 
-    <include file="v1-create-table-rating.xml" relativeToChangelogFile="true"/>
-    <include file="v1-modify-driver-id.xml" relativeToChangelogFile="true"/>
+    <changeSet id="v1-2" author="Razuvanau Fiodar">
+        <modifyDataType tableName="driver_rating" columnName="driver_id" newDataType="varchar(255)"/>
+    </changeSet>
 </databaseChangeLog>

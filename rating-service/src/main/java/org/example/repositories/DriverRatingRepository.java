@@ -11,10 +11,10 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface DriverRatingRepository extends JpaRepository<DriverRating, Long>{
+public interface DriverRatingRepository extends JpaRepository<DriverRating, String>{
     @Modifying
     @Query("UPDATE DriverRating dr SET dr.deleted = true WHERE dr.driverId = :id")
-    void softDelete(@Param("id") Long id);
+    void softDelete(@Param("id") String id);
     @Modifying
     @Query(value = "MERGE INTO driver_rating dr\n" +
             "USING (SELECT :driverId AS driverId, :rating AS rating) src\n" +
@@ -26,11 +26,11 @@ public interface DriverRatingRepository extends JpaRepository<DriverRating, Long
             "WHEN NOT MATCHED THEN\n" +
             "    INSERT (driver_id, average_rating, rating_count)\n" +
             "    VALUES (src.driverId, src.rating, 1)", nativeQuery = true)
-    void updateRating(@Param("driverId") Long id, @Param("rating") double rating);
+    void updateRating(@Param("driverId") String id, @Param("rating") double rating);
 
     @Query("SELECT dr FROM DriverRating dr WHERE dr.deleted = false")
     List<DriverRating> findAllNotDeleted();
 
     @Query("SELECT dr FROM DriverRating dr WHERE dr.driverId = :driverId AND dr.deleted = false")
-    Optional<DriverRating> findRating(@Param("driverId") Long id);
+    Optional<DriverRating> findRating(@Param("driverId") String id);
 }

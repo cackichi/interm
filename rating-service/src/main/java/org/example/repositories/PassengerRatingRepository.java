@@ -25,8 +25,8 @@ public interface PassengerRatingRepository extends JpaRepository<PassengerRating
             "        rating_count = pr.rating_count + 1\n" +
             "WHEN NOT MATCHED THEN\n" +
             "    INSERT (passenger_id, average_rating, rating_count)\n" +
-            "    VALUES (src.passengerId, src.rating, 1)", nativeQuery = true)
-    void updateRating(@Param("passengerId") Long id, @Param("rating") double rating);
+            "    VALUES (src.passengerId, 0, 0)", nativeQuery = true)
+    void updateOrSaveRating(@Param("passengerId") Long id, @Param("rating") double rating);
 
     @Query("SELECT pr FROM PassengerRating pr WHERE pr.deleted = false")
     List<PassengerRating> findAllNotDeleted();

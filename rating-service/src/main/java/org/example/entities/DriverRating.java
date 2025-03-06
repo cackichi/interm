@@ -14,7 +14,7 @@ import lombok.*;
 @Table(name = "driver_rating")
 public class DriverRating {
     @Id
-    private Long driverId;
+    private String driverId;
     private double averageRating;
     private int ratingCount;
     private boolean deleted = false;

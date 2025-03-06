@@ -9,9 +9,12 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
-public class DriverRatingDTO {
+public class TravelEvent {
+    private Long passengerId;
+    private double costOfRide;
+    private double ratingForPassenger;
+    private Long rideId;
     private String driverId;
-    private double averageRating;
-    private int ratingCount;
-    private boolean deleted = false;
+    private String pointA;
+    private String pointB;
 }
