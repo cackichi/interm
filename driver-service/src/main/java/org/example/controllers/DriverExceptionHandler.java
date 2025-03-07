@@ -2,6 +2,7 @@ package org.example.controllers;
 
 import org.example.dto.ErrorResponse;
 import org.example.exceptions.NotFoundException;
+import org.example.exceptions.NullIdException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -16,7 +17,11 @@ public class DriverExceptionHandler {
         ErrorResponse errorResponse = new ErrorResponse(ex.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
     }
-
+    @ExceptionHandler(NullIdException.class)
+    public ResponseEntity<ErrorResponse> handleBadReq(NullIdException ex) {
+        ErrorResponse errorResponse = new ErrorResponse(ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    }
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleAllExceptions(Exception ex) {
         ErrorResponse errorResponse = new ErrorResponse(ex.getMessage());
