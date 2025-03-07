@@ -14,4 +14,11 @@ public class TravelEvent {
     private double costOfRide;
     private double ratingForPassenger;
     private Long rideId;
+    private String driverId;
+    private String pointA;
+    private String pointB;
+
+    public TravelEvent(Long passengerId) {
+        this.passengerId = passengerId;
+    }
 }

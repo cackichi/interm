@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.example.dto.PassengerDTO;
 import org.example.dto.PassengerPageDTO;
+import org.example.dto.TravelEvent;
 import org.example.entities.Passenger;
 import org.example.entities.Status;
 import org.example.repositories.PassengerRepo;
@@ -23,7 +24,7 @@ import java.util.concurrent.CompletableFuture;
 public class PassengerService {
     private final PassengerRepo passengerRepo;
     private final ModelMapper modelMapper;
-    private final KafkaTemplate<String, PassengerDTO> kafkaTemplate;
+    private final KafkaTemplate<String, TravelEvent> kafkaTemplate;
 
     public PassengerDTO mapToDTO(Passenger passenger){
         return modelMapper.map(passenger, PassengerDTO.class);
@@ -83,7 +84,7 @@ public class PassengerService {
     }
 
     public void orderTaxi(Long id){
-        CompletableFuture<SendResult<String, PassengerDTO>> future = kafkaTemplate.send("order-taxi-event-topic", String.valueOf(id), new PassengerDTO(id));
+        CompletableFuture<SendResult<String, TravelEvent>> future = kafkaTemplate.send("order-taxi-event-topic", String.valueOf(id), new TravelEvent(id));
 
         future.whenComplete((result, exception) -> {
             if(exception != null){
@@ -100,7 +101,7 @@ public class PassengerService {
     }
 
     public void createPassengerEvent(Long id){
-        CompletableFuture<SendResult<String, PassengerDTO>> future = kafkaTemplate.send("passenger-create-event-topic", String.valueOf(id), new PassengerDTO(id));
+        CompletableFuture<SendResult<String, TravelEvent>> future = kafkaTemplate.send("passenger-create-event-topic", String.valueOf(id), new TravelEvent(id));
 
         future.whenComplete((result, exception) -> {
             if(exception != null){
@@ -112,7 +113,7 @@ public class PassengerService {
     }
 
     public void hardDeletePassengerEvent(Long id){
-        CompletableFuture<SendResult<String, PassengerDTO>> future = kafkaTemplate.send("passenger-hard-delete-event-topic", String.valueOf(id), new PassengerDTO(id));
+        CompletableFuture<SendResult<String, TravelEvent>> future = kafkaTemplate.send("passenger-hard-delete-event-topic", String.valueOf(id), new TravelEvent(id));
 
         future.whenComplete((result, exception) -> {
             if(exception != null){
@@ -124,7 +125,7 @@ public class PassengerService {
     }
 
     public void softDeletePassengerEvent(Long id){
-        CompletableFuture<SendResult<String, PassengerDTO>> future = kafkaTemplate.send("passenger-soft-delete-event-topic", String.valueOf(id), new PassengerDTO(id));
+        CompletableFuture<SendResult<String, TravelEvent>> future = kafkaTemplate.send("passenger-soft-delete-event-topic", String.valueOf(id), new TravelEvent(id));
 
         future.whenComplete((result, exception) -> {
             if(exception != null){
