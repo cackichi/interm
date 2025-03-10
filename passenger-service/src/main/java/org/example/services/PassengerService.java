@@ -23,7 +23,7 @@ public interface PassengerService {
 
     PassengerDTO findOne(Long id);
 
-    void orderTaxi(Long id);
+    void orderTaxi(Long id, String pointA, String pointB);
 
     boolean checkExistsAndStatus(Long id);
 

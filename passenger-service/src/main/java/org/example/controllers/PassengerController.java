@@ -72,11 +72,13 @@ public class PassengerController {
     @PatchMapping("/order-taxi/{passengerId}")
     @Operation(summary = "Заказ такси", description = "Позволяет отправить запрос на заказ такси")
     public ResponseEntity<ErrorResponse> orderTaxi(
-            @PathVariable("passengerId") @Parameter(description = "Id пассажира который заказывает такси", required = true) Long id
+            @PathVariable("passengerId") @Parameter(description = "Id пассажира который заказывает такси", required = true) Long id,
+            @RequestParam("pointA") @Parameter(description = "Пункт отправления", required = true) String pointA,
+            @RequestParam("pointB") @Parameter(description = "Пункт назначения", required = true) String pointB
     ) throws OrderTaxiException {
         if (!passengerService.checkExistsAndStatus(id))
             throw new OrderTaxiException("Пассажира с таким айди не существует либо он уже в поездке");
-        passengerService.orderTaxi(id);
+        passengerService.orderTaxi(id, pointA, pointB);
         return ResponseEntity.status(HttpStatus.OK).body(new ErrorResponse("Запрос на создание заявки на поездку отправлен, ожидайте пока водитель примет ее"));
     }
 }

@@ -16,12 +16,12 @@ public class PassengerTravelEventHandler {
     @KafkaListener(topics = "stop-travel-event-topic")
     public void handleStopTravel(TravelEvent travelEvent){
         if(travelEvent.getPassengerId() == null) throw new NonRetryableException("Non retryable exception - passegner id is null");
-        passengerService.travelEventUpdate(Status.TRAVELING, travelEvent.getPassengerId());
+        passengerService.travelEventUpdate(Status.NOT_ACTIVE, travelEvent.getPassengerId());
     }
 
     @KafkaListener(topics = "start-travel-event-topic")
     public void handleStartTravel(TravelEvent travelEvent){
         if(travelEvent.getPassengerId() == null) throw new NonRetryableException("Non retryable exception - passegner id is null");
-        passengerService.travelEventUpdate(Status.NOT_ACTIVE, travelEvent.getPassengerId());
+        passengerService.travelEventUpdate(Status.TRAVELING, travelEvent.getPassengerId());
     }
 }

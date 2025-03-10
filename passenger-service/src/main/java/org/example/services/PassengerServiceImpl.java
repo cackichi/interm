@@ -84,8 +84,12 @@ public class PassengerServiceImpl implements PassengerService{
                 .orElseThrow(() -> new EntityNotFoundException("Пассажир с таким идентификатором не найден"));
     }
     @Override
-    public void orderTaxi(Long id){
-        CompletableFuture<SendResult<String, TravelEvent>> future = kafkaTemplate.send("order-taxi-event-topic", String.valueOf(id), new TravelEvent(id));
+    public void orderTaxi(Long id, String pointA, String pointB){
+        TravelEvent travelEvent = new TravelEvent();
+        travelEvent.setPassengerId(id);
+        travelEvent.setPointA(pointA);
+        travelEvent.setPointB(pointB);
+        CompletableFuture<SendResult<String, TravelEvent>> future = kafkaTemplate.send("order-taxi-event-topic", String.valueOf(id), travelEvent);
 
         future.whenComplete((result, exception) -> {
             if(exception != null){
@@ -106,9 +110,9 @@ public class PassengerServiceImpl implements PassengerService{
 
         future.whenComplete((result, exception) -> {
             if(exception != null){
-              log.error("Field to send message: {}", exception.getMessage());
+                log.error("Field to send message: {}", exception.getMessage());
             } else {
-               log.info("Create topic work successfully: {}", result.getRecordMetadata());
+                log.info("Create topic work successfully: {}", result.getRecordMetadata());
             }
         });
     }
