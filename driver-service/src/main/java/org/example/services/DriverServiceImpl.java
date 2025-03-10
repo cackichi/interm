@@ -5,6 +5,7 @@ import lombok.extern.log4j.Log4j2;
 import org.example.collections.Driver;
 import org.example.dto.DriverDTO;
 import org.example.dto.DriverPageDTO;
+import org.example.dto.TravelEvent;
 import org.example.exceptions.BusyDriverException;
 import org.example.exceptions.NotFoundException;
 import org.example.repositories.DriverRepository;
@@ -27,7 +28,7 @@ import java.util.stream.Collectors;
 public class DriverServiceImpl implements DriverService{
     private final DriverRepository driverRepository;
     private final ModelMapper modelMapper;
-    private final KafkaTemplate<String, DriverDTO> kafkaTemplate;
+    private final KafkaTemplate<String, TravelEvent> kafkaTemplate;
 
     @Override
     public Driver mapToDriver(DriverDTO driverDTO){
@@ -112,7 +113,7 @@ public class DriverServiceImpl implements DriverService{
 
     @Override
     public void driverCreateEvent(String id){
-        CompletableFuture<SendResult<String, DriverDTO>> future = kafkaTemplate.send("driver-create-event-topic", id,new DriverDTO(id));
+        CompletableFuture<SendResult<String, TravelEvent>> future = kafkaTemplate.send("driver-create-event-topic", id,new TravelEvent(id));
 
         future.whenComplete((result, exception) -> {
             if(exception != null){
@@ -124,7 +125,7 @@ public class DriverServiceImpl implements DriverService{
     }
     @Override
     public void driverHardDeleteEvent(String id){
-        CompletableFuture<SendResult<String, DriverDTO>> future = kafkaTemplate.send("driver-hard-delete-event-topic", id, new DriverDTO(id));
+        CompletableFuture<SendResult<String, TravelEvent>> future = kafkaTemplate.send("driver-hard-delete-event-topic", id, new TravelEvent(id));
 
         future.whenComplete((result, exception) -> {
             if(exception != null){
@@ -136,7 +137,7 @@ public class DriverServiceImpl implements DriverService{
     }
     @Override
     public void driverSoftDeleteEvent(String id){
-        CompletableFuture<SendResult<String, DriverDTO>> future = kafkaTemplate.send("driver-soft-delete-event-topic", id, new DriverDTO(id));
+        CompletableFuture<SendResult<String, TravelEvent>> future = kafkaTemplate.send("driver-soft-delete-event-topic", id, new TravelEvent(id));
 
         future.whenComplete((result, exception) -> {
             if(exception != null){
@@ -147,10 +148,13 @@ public class DriverServiceImpl implements DriverService{
         });
     }
     @Override
-    public void driverValidEvent(String id){
+    public void driverValidEvent(String driverId, Long rideId){
         try {
-            updateStatusForTravel(id, "BUSY");
-            CompletableFuture<SendResult<String, DriverDTO>> future = kafkaTemplate.send("driver-valid-event-topic", id, new DriverDTO(id));
+            updateStatusForTravel(driverId, "BUSY");
+            TravelEvent travelEvent = new TravelEvent();
+            travelEvent.setDriverId(driverId);
+            travelEvent.setRideId(rideId);
+            CompletableFuture<SendResult<String, TravelEvent>> future = kafkaTemplate.send("driver-valid-event-topic", driverId, travelEvent);
 
             future.whenComplete((result, exception) -> {
                 if(exception != null){

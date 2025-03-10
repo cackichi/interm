@@ -17,4 +17,8 @@ public class TravelEvent {
     private String driverId;
     private String pointA;
     private String pointB;
+
+    public TravelEvent(String driverId) {
+        this.driverId = driverId;
+    }
 }

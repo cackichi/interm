@@ -24,7 +24,7 @@ public interface DriverService {
 
     DriverPageDTO findAllNotDeleted(Pageable pageable);
 
-    void driverValidEvent(String id);
+    void driverValidEvent(String id, Long rideId);
     Driver mapToDriver(DriverDTO driverDTO);
     DriverDTO mapToDTO(Driver driver);
     void driverCreateEvent(String id);
