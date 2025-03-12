@@ -8,6 +8,7 @@ import org.example.entities.Status;
 @Getter
 @Setter
 @Builder
+@EqualsAndHashCode
 @Schema(description = "Сущность поездки")
 public class RideDTO {
     @Schema(description = "Идентификатор")

@@ -30,7 +30,7 @@ public class RideController {
             @RequestBody @Parameter(required = true) RideDTO rideDTO
     ) {
         rideService.create(rideDTO);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @GetMapping("/{id}")
