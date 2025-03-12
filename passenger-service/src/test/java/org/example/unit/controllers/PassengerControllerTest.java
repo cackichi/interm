@@ -1,6 +1,7 @@
-package org.example.controllers;
+package org.example.unit.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.example.controllers.PassengerController;
 import org.example.dto.PassengerDTO;
 import org.example.dto.PassengerPageDTO;
 import org.example.entities.Passenger;

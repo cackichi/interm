@@ -1,4 +1,4 @@
-package org.example.services;
+package org.example.unit.services;
 
 import org.example.dto.PassengerDTO;
 import org.example.dto.PassengerPageDTO;
@@ -6,6 +6,7 @@ import org.example.dto.TravelEvent;
 import org.example.entities.Passenger;
 import org.example.entities.Status;
 import org.example.repositories.PassengerRepo;
+import org.example.services.PassengerServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -169,7 +170,9 @@ class PassengerServiceTest {
         verify(kafkaTemplate).send(
                 eq("order-taxi-event-topic"),
                 eq("1"),
-                any(TravelEvent.class)
+                argThat(t -> t.getPassengerId().equals(1L) &&
+                        t.getPointA().equals("Москва") &&
+                        t.getPointB().equals("Санкт-Петербург"))
         );
     }
 
