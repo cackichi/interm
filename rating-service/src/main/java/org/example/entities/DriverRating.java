@@ -11,6 +11,7 @@ import lombok.*;
 @Getter
 @Setter
 @Builder
+@EqualsAndHashCode
 @Table(name = "driver_rating")
 public class DriverRating {
     @Id
