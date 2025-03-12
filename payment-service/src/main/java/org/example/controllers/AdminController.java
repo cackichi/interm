@@ -6,10 +6,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import org.example.services.BalanceService;
 import org.example.services.PaymentService;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/admin")
@@ -21,6 +19,7 @@ public class AdminController {
 
     @DeleteMapping("/balance/{passengerId}")
     @Operation(summary = "Полное удаление баланса", description = "Позволяет полностью удалить баланс пассажира")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void hardDeleteBalance(
             @PathVariable("passengerId") @Parameter(description = "id пассажира", required = true) Long passengerId
     ) {
@@ -29,6 +28,7 @@ public class AdminController {
 
     @DeleteMapping("/payment/{passengerId}")
     @Operation(summary = "Полное удаление плажтежа", description = "Позволяет полностью удалить платеж пассажира")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void hardDeletePayment(
             @PathVariable("passengerId") @Parameter(description = "id пассажира", required = true) Long passengerId
     ) {

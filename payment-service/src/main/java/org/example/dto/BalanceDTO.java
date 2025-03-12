@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @Builder
+@EqualsAndHashCode
 @Schema(description = "Сущность баланса")
 public class BalanceDTO {
     @Schema(description = "Идентификатор пассажира")

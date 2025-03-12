@@ -11,6 +11,7 @@ import org.example.entities.Status;
 @Getter
 @Setter
 @Builder
+@EqualsAndHashCode
 @Schema(description = "Сущность платежа")
 public class PaymentDTO {
     @Schema(description = "Идентификатор")

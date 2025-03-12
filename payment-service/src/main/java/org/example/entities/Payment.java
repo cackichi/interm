@@ -8,6 +8,7 @@ import lombok.*;
 @NoArgsConstructor
 @Getter
 @Setter
+@EqualsAndHashCode
 public class Payment {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "payment_seq")
