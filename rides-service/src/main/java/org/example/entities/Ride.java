@@ -15,7 +15,7 @@ public class Ride {
     @SequenceGenerator(name = "ride_seq", sequenceName = "ride_seq", initialValue = 100, allocationSize = 1)
     private Long id;
     private Long passengerId;
-    private Long driverId;
+    private String driverId;
     @Column(name = "point_a")
     private String pointA;
     @Column(name = "point_b")
