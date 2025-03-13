@@ -1,6 +1,8 @@
 package org.example.controllers;
 
-import jakarta.persistence.EntityNotFoundException;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import org.example.dto.ErrorResponse;
 import org.example.dto.PassengerDTO;
@@ -17,74 +19,66 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/passenger")
 @AllArgsConstructor
+@Tag(name = "Пользовательский контроллер", description = "Взаимодействие с пассажирами")
 public class PassengerController {
     private final PassengerService passengerService;
 
     @PostMapping
-    public ResponseEntity<PassengerDTO> createPassenger(@RequestBody PassengerDTO passengerDTO){
-        try {
-            Passenger passenger = passengerService.save(passengerDTO);
-            return ResponseEntity.status(HttpStatus.CREATED).body(passengerService.mapToDTO(passenger));
-        } catch (Exception e){
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+    @Operation(summary = "Создание пассажира", description = "Позволяет создать нового пассажира")
+    public ResponseEntity<PassengerDTO> createPassenger(
+            @RequestBody @Parameter(required = true) PassengerDTO passengerDTO
+    ) {
+        Passenger passenger = passengerService.save(passengerDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(passengerService.mapToDTO(passenger));
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ErrorResponse> editPassenger(@RequestBody PassengerDTO edit, @PathVariable("id") Long id){
-        try {
-            passengerService.updatePass(id, edit);
-            return ResponseEntity.noContent().build();
-        } catch (Exception e){
-            ErrorResponse errorResponse = new ErrorResponse(e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
-        }
+    @Operation(summary = "Обновление пассажира", description = "Позволяет обновить информацию о пассажире")
+    public ResponseEntity<ErrorResponse> editPassenger(
+            @RequestBody @Parameter(required = true) PassengerDTO edit,
+            @PathVariable("id") @Parameter(description = "id обновляемого пассажира", required = true) Long id
+    ) {
+        passengerService.updatePass(id, edit);
+        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ErrorResponse> softDeletePassenger(@PathVariable("id") Long id){
-        try {
-            passengerService.softDelete(id);
-            return ResponseEntity.noContent().build();
-        } catch (Exception e){
-            ErrorResponse errorResponse = new ErrorResponse(e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
-        }
+    @Operation(summary = "Мягкое удаление пассажира", description = "Позволяет мягко удалить пассажира")
+    public ResponseEntity<ErrorResponse> softDeletePassenger(
+            @PathVariable("id") @Parameter(description = "id удаляемого пассажира", required = true) Long id
+    ) {
+        passengerService.softDelete(id);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping
+    @Operation(summary = "Список пассажиров с пагинацией", description = "Позволяет найти всех пассажиров + информация пагинации")
     public ResponseEntity<PassengerPageDTO> findAll(
-            @RequestParam(value = "page", defaultValue = "0") int page,
-            @RequestParam(value = "size", defaultValue = "0") int size){
+            @RequestParam(value = "page", defaultValue = "0") @Parameter(description = "Номер страницы пагинации") int page,
+            @RequestParam(value = "size", defaultValue = "10") @Parameter(description = "Размер пагинации") int size
+    ) {
         Pageable pageable = PageRequest.of(page, size);
-        try {
-            return ResponseEntity.ok(passengerService.findAllNotDeleted(pageable));
-        } catch (Exception e){
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        return ResponseEntity.ok(passengerService.findAllNotDeleted(pageable));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<PassengerDTO> findOne(@PathVariable("id") Long id){
-        try {
-            return ResponseEntity.ok(passengerService.findOne(id));
-        } catch (EntityNotFoundException e){
-            return ResponseEntity.notFound().build();
-        } catch (Exception e){
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+    @Operation(summary = "Поиск пассажира", description = "Позволяет найти суествующего пассажира")
+    public ResponseEntity<PassengerDTO> findOne(
+            @PathVariable("id") @Parameter(description = "Id необходимого пассажира", required = true) Long id
+    ) {
+        return ResponseEntity.ok(passengerService.findOne(id));
     }
 
     @PatchMapping("/order-taxi/{passengerId}")
-    public ResponseEntity<ErrorResponse> orderTaxi(@PathVariable("passengerId") Long id){
-        try{
-            if(!passengerService.checkExistsAndStatus(id)) throw new OrderTaxiException("Пассажира с таким айди не существует либо он уже в поездке");
-            passengerService.orderTaxi(id);
-            return ResponseEntity.status(HttpStatus.OK).body(new ErrorResponse("Запрос на создание заявки на поездку отправлен, ожидайте пока водитель примет ее"));
-        } catch (OrderTaxiException e){
-            return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ErrorResponse(e.getMessage()));
-        }
+    @Operation(summary = "Заказ такси", description = "Позволяет отправить запрос на заказ такси")
+    public ResponseEntity<ErrorResponse> orderTaxi(
+            @PathVariable("passengerId") @Parameter(description = "Id пассажира который заказывает такси", required = true) Long id,
+            @RequestParam("pointA") @Parameter(description = "Пункт отправления", required = true) String pointA,
+            @RequestParam("pointB") @Parameter(description = "Пункт назначения", required = true) String pointB
+    ) throws OrderTaxiException {
+        if (!passengerService.checkExistsAndStatus(id))
+            throw new OrderTaxiException("Пассажира с таким айди не существует либо он уже в поездке");
+        passengerService.orderTaxi(id, pointA, pointB);
+        return ResponseEntity.status(HttpStatus.OK).body(new ErrorResponse("Запрос на создание заявки на поездку отправлен, ожидайте пока водитель примет ее"));
     }
 }

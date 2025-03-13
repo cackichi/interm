@@ -5,6 +5,7 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
+import org.example.dto.TravelEvent;
 import org.example.exceptions.NonRetryableException;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -29,16 +30,12 @@ public class KafkaConsumerConfig {
     ConsumerFactory<String, Object> consumerFactory(){
         Map<String, Object> config = new HashMap<>();
 
-        config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG,
-                environment.getProperty("spring.kafka.consumer.bootstrap-servers"));
+        config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, environment.getProperty("spring.kafka.bootstrap-servers"));
         config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, ErrorHandlingDeserializer.class);
         config.put(ErrorHandlingDeserializer.VALUE_DESERIALIZER_CLASS, JsonDeserializer.class);
-                environment.getProperty("spring.kafka.consumer.properties.spring.deserializer.value.delegate.class");
-        config.put(ConsumerConfig.GROUP_ID_CONFIG,
-                environment.getProperty("spring.kafka.consumer.group-id"));
-        config.put(JsonDeserializer.TRUSTED_PACKAGES,
-                environment.getProperty("spring.kafka.consumer.properties.spring.json.trusted.packages"));
+        config.put(ConsumerConfig.GROUP_ID_CONFIG, environment.getProperty("consumer.group-id"));
+        config.put(JsonDeserializer.VALUE_DEFAULT_TYPE, TravelEvent.class);
 
         return new DefaultKafkaConsumerFactory<>(config);
     }
@@ -61,7 +58,7 @@ public class KafkaConsumerConfig {
     @Bean
     ProducerFactory<String, Object> producerFactoryForDL(){
         Map<String, Object> config = new HashMap<>();
-        config.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, environment.getProperty("spring.kafka.consumer.bootstrap-servers"));
+        config.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, environment.getProperty("spring.kafka.bootstrap-servers"));
         config.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
 
