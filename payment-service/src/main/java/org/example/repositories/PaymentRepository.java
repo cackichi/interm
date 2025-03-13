@@ -14,7 +14,7 @@ import java.util.Optional;
 @Repository
 public interface PaymentRepository extends JpaRepository<Payment, Long> {
     @Query("SELECT p FROM Payment p WHERE p.status = 'WAITING' AND p.passengerId = :passengerId")
-    Optional<Payment> getUnpaid(@Param("passengerId") Long passengerId);
+    List<Payment> getUnpaid(@Param("passengerId") Long passengerId);
 
     @Query("SELECT p FROM Payment p WHERE p.status = 'PAID' AND p.passengerId = :passengerId AND p.deleted = false")
     List<Payment> getPaid(@Param("passengerId") Long passengerId);

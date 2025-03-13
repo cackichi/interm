@@ -1,9 +1,7 @@
 package org.example.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -12,9 +10,16 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Getter
 @Setter
+@Builder
+@EqualsAndHashCode
+@Schema(description = "Сущность баланса")
 public class BalanceDTO {
+    @Schema(description = "Идентификатор пассажира")
     private Long passengerId;
+    @Schema(description = "Текущий баланс")
     private double balance;
+    @Schema(description = "Время последнего пополнения")
     private LocalDateTime timeLastDeposit;
+    @Schema(description = "Статус доступности")
     private boolean deleted = false;
 }

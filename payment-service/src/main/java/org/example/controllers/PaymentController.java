@@ -1,11 +1,12 @@
 package org.example.controllers;
 
-import jakarta.persistence.EntityNotFoundException;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import org.example.dto.ErrorResponse;
 import org.example.dto.PaymentDTO;
 import org.example.dto.PaymentPageDTO;
-import org.example.exceptions.CreatePaymentException;
 import org.example.exceptions.InsufficientBalanceException;
 import org.example.services.PaymentService;
 import org.springframework.data.domain.PageRequest;
@@ -17,66 +18,57 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/payment")
 @AllArgsConstructor
+@Tag(name = "Пользовательский контроллер платежей", description = "Взаимодействие с платежами пассажира")
 public class PaymentController {
     private final PaymentService paymentService;
 
     @PostMapping
-    public ResponseEntity<ErrorResponse> create(@RequestBody PaymentDTO paymentDTO){
-        try {
-            paymentService.create(paymentDTO);
-            return ResponseEntity.status(HttpStatus.CREATED).build();
-        } catch (CreatePaymentException e) {
-            return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ErrorResponse(e.getMessage()));
-        }
+    @Operation(summary = "Создание платежа", description = "Позволяет создать платеж пассажиру")
+    public ResponseEntity<ErrorResponse> create(
+            @RequestBody @Parameter(required = true) PaymentDTO paymentDTO
+    ) {
+        paymentService.create(paymentDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @PatchMapping("/close/{passengerId}")
-    public ResponseEntity<ErrorResponse> closePayment(@PathVariable("passengerId") Long passengerId){
-        try {
-            paymentService.closePayment(passengerId);
-            return ResponseEntity.noContent().build();
-        } catch (InsufficientBalanceException | EntityNotFoundException e) {
-            return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ErrorResponse(e.getMessage()));
-        }
+    @Operation(summary = "Закратие платежа", description = "Позволяет закрыть платеж пассажира")
+    public ResponseEntity<ErrorResponse> closePayment(
+            @PathVariable("passengerId") @Parameter(description = "id пассажира", required = true) Long passengerId
+    ) throws InsufficientBalanceException {
+        paymentService.closePayment(passengerId);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/unpaid/{passengerId}")
-    public ResponseEntity<PaymentDTO> getUnpaid(@PathVariable("passengerId") Long passengerId){
-        try {
-            PaymentDTO paymentDTO = paymentService.getUnpaid(passengerId);
-            return ResponseEntity.status(HttpStatus.OK).body(paymentDTO);
-        } catch (EntityNotFoundException e){
-            return ResponseEntity.notFound().build();
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+    @Operation(summary = "Список незакрытых платежей", description = "Позволяет найти список незакрытых платежей пассажира с пагинацией")
+    public ResponseEntity<PaymentPageDTO> getUnpaid(
+            @PathVariable("passengerId") @Parameter(description = "id пассажира", required = true) Long passengerId,
+            @RequestParam(value = "page", defaultValue = "0") @Parameter(description = "номер страницы пагинации") int page,
+            @RequestParam(value = "size", defaultValue = "10") @Parameter(description = "размер пагинации", required = true) int size
+    ) {
+        Pageable pageable = PageRequest.of(page, size);
+        PaymentPageDTO paymentPageDTO = paymentService.getUnpaid(passengerId, pageable);
+        return ResponseEntity.status(HttpStatus.OK).body(paymentPageDTO);
     }
 
     @GetMapping("/paid/{passengerId}")
+    @Operation(summary = "Список закрытых платежей", description = "Позволяет найти список закрытых платежей пассажира с пагинацие")
     public ResponseEntity<PaymentPageDTO> getPaid(
-            @PathVariable("passengerId") Long passengerId,
-            @RequestParam(value = "page", defaultValue = "0") int page,
-            @RequestParam(value = "size", defaultValue = "10") int size
-    ){
-        try {
-            Pageable pageable = PageRequest.of(page, size);
-            return ResponseEntity.ok(paymentService.getPaid(passengerId, pageable));
-        } catch (Exception e){
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+            @PathVariable("passengerId") @Parameter(description = "id пассажира", required = true) Long passengerId,
+            @RequestParam(value = "page", defaultValue = "0") @Parameter(description = "номер страницы пагинации") int page,
+            @RequestParam(value = "size", defaultValue = "10") @Parameter(description = "размер пагинации", required = true) int size
+    ) {
+        Pageable pageable = PageRequest.of(page, size);
+        return ResponseEntity.ok(paymentService.getPaid(passengerId, pageable));
     }
 
     @DeleteMapping("/{passengerId}")
-    public ResponseEntity<ErrorResponse> softDelete(@PathVariable("passengerId") Long passengerId){
-        try {
-            paymentService.softDelete(passengerId);
-            return ResponseEntity.noContent().build();
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ErrorResponse(e.getMessage()));
-        }
+    @Operation(summary = "Мягкое удаление платежа", description = "Позволяет мягко удалить платеж")
+    public ResponseEntity<ErrorResponse> softDelete(
+            @PathVariable("passengerId") @Parameter(description = "id пассажира", required = true) Long passengerId
+    ) {
+        paymentService.softDelete(passengerId);
+        return ResponseEntity.noContent().build();
     }
 }
