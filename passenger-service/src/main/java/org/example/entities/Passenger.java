@@ -1,16 +1,14 @@
 package org.example.entities;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
+@EqualsAndHashCode
 public class Passenger {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_passenger_id")
