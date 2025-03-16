@@ -31,7 +31,6 @@ public class RideEventHandler {
                 .pointA(travelEvent.getPointA())
                 .pointB(travelEvent.getPointB())
                 .build();
-        System.out.println(ride.getPassengerId());
         rideService.create(ride);
     }
 }

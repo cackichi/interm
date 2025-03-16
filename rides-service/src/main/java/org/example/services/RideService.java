@@ -6,12 +6,11 @@ import org.example.entities.Ride;
 import org.example.entities.Status;
 import org.example.exceptions.NoWaitingRideException;
 import org.springframework.data.domain.Pageable;
-import org.springframework.transaction.annotation.Transactional;
 
 public interface RideService {
     Ride mapToRide(RideDTO rideDTO);
     RideDTO mapToDTO(Ride ride);
-    void create(RideDTO rideDTO);
+    RideDTO create(RideDTO rideDTO);
     void softDelete(Long id);
     void update(Long id, RideDTO rideDTO);
     void hardDelete(Long id);

@@ -1,5 +1,6 @@
 package org.example.repositories;
 
+import jakarta.transaction.Transactional;
 import org.example.entities.Ride;
 import org.example.entities.Status;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -29,6 +30,7 @@ public interface RideRepository extends JpaRepository<Ride, Long> {
 
     @Modifying
     @Query("UPDATE Ride r SET r.status = :status WHERE r.id = :id")
+    @Transactional
     void updateStatus(Long id,Status status);
 
     @Query(value = "SELECT id FROM ride r WHERE r.status = 'WAITING' LIMIT 1", nativeQuery = true)
