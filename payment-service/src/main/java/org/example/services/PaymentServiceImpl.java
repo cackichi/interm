@@ -37,9 +37,9 @@ public class PaymentServiceImpl implements PaymentService{
     }
     @Override
     @Transactional
-    public void create(PaymentDTO paymentDTO) {
+    public Payment create(PaymentDTO paymentDTO) {
         paymentDTO.setStatus(Status.WAITING);
-        paymentRepository.save(mapToPayment(paymentDTO));
+        return paymentRepository.save(mapToPayment(paymentDTO));
     }
     @Override
     @Transactional

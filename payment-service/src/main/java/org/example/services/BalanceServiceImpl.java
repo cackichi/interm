@@ -45,8 +45,8 @@ public class BalanceServiceImpl implements BalanceService{
         balanceRepository.deleteById(passengerId);
     }
     @Override
-    public void create(BalanceDTO balanceDTO){
+    public Balance create(BalanceDTO balanceDTO){
         if(balanceDTO.getPassengerId() == null) throw new IdentifierGenerationException("Вы не указали идентификатор пассажира");
-        balanceRepository.save(mapToBalance(balanceDTO));
+        return balanceRepository.save(mapToBalance(balanceDTO));
     }
 }

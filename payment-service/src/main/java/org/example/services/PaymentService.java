@@ -13,7 +13,7 @@ public interface PaymentService {
 
     PaymentDTO mapToDTO(Payment payment);
 
-    void create(PaymentDTO paymentDTO);
+    Payment create(PaymentDTO paymentDTO);
 
     void closePayment(Long passengerId) throws InsufficientBalanceException;
 
