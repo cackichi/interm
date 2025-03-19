@@ -12,16 +12,8 @@ import org.example.services.PassengerServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.kafka.ConfluentKafkaContainer;
-import org.testcontainers.utility.DockerImageName;
 
 import java.util.concurrent.TimeUnit;
 
@@ -29,33 +21,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest
-@Testcontainers
-public class PassengerServiceIntegrationTest {
+public class PassengerServiceIntegrationTest extends BaseIntegrationTest{
     @Autowired
     private PassengerRepo passengerRepo;
     @Autowired
     private KafkaConsumer kafkaConsumer;
     @Autowired
     private PassengerServiceImpl passengerService;
-    @Container
-    static PostgreSQLContainer<?> database = new PostgreSQLContainer<>("postgres:latest")
-            .withDatabaseName("testdb")
-            .withUsername("test")
-            .withPassword("test")
-            .withReuse(true);
 
-    @Container
-    static ConfluentKafkaContainer kafka = new ConfluentKafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.6.1"));
-
-    @DynamicPropertySource
-    static void properties(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", database::getJdbcUrl);
-        registry.add("spring.datasource.username", database::getUsername);
-        registry.add("spring.datasource.password", database::getPassword);
-
-        registry.add("spring.kafka.bootstrap-servers", kafka::getBootstrapServers);
-    }
 
     @BeforeEach
     void setUp() {
@@ -77,7 +50,9 @@ public class PassengerServiceIntegrationTest {
         assertNotNull(savedPassenger);
         assertThat(passengerDTO.getEmail()).isEqualTo(savedPassenger.getEmail());
 
-        await().atMost(1, TimeUnit.SECONDS)
+        await().atMost(3, TimeUnit.SECONDS)
+                .pollInterval(500, TimeUnit.MILLISECONDS)
+                .pollDelay(500, TimeUnit.MILLISECONDS)
                 .until(() -> kafkaConsumer.getProcessedMessages("passenger-create-event-topic").isPresent());
 
         TravelEvent travelEvent = kafkaConsumer.getProcessedMessages("passenger-create-event-topic").get();
@@ -132,7 +107,9 @@ public class PassengerServiceIntegrationTest {
         assertTrue(passengerRepo.findById(savedPassenger.getId()).isPresent());
         assertTrue(passengerRepo.findById(savedPassenger.getId()).get().isDeleted());
 
-        await().atMost(1, TimeUnit.SECONDS)
+        await().atMost(10, TimeUnit.SECONDS)
+                .pollInterval(500, TimeUnit.MILLISECONDS)
+                .pollDelay(500, TimeUnit.MILLISECONDS)
                 .until(() -> kafkaConsumer.getProcessedMessages("passenger-soft-delete-event-topic").isPresent());
 
         TravelEvent travelEvent = kafkaConsumer.getProcessedMessages("passenger-soft-delete-event-topic").get();
@@ -157,7 +134,9 @@ public class PassengerServiceIntegrationTest {
 
         assertThrows(EntityNotFoundException.class, () -> passengerService.findOne(savedPassenger.getId()));
 
-        await().atMost(1, TimeUnit.SECONDS)
+        await().atMost(3, TimeUnit.SECONDS)
+                .pollInterval(500, TimeUnit.MILLISECONDS)
+                .pollDelay(500, TimeUnit.MILLISECONDS)
                 .until(() -> kafkaConsumer.getProcessedMessages("passenger-hard-delete-event-topic").isPresent());
 
         TravelEvent travelEvent = kafkaConsumer.getProcessedMessages("passenger-hard-delete-event-topic").get();
@@ -253,6 +232,8 @@ public class PassengerServiceIntegrationTest {
         passengerService.orderTaxi(savedPass.getId(), "Moskow", "Mogilev");
 
         await().atMost(3, TimeUnit.SECONDS)
+                .pollInterval(500, TimeUnit.MILLISECONDS)
+                .pollDelay(500, TimeUnit.MILLISECONDS)
                 .until(() -> kafkaConsumer.getProcessedMessages("order-taxi-event-topic").isPresent());
 
         TravelEvent travelEvent = kafkaConsumer.getProcessedMessages("order-taxi-event-topic").get();

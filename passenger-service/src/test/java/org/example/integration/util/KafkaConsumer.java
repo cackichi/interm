@@ -37,6 +37,6 @@ public class KafkaConsumer {
     }
 
     public Optional<TravelEvent> getProcessedMessages(String topic) {
-        return Optional.of(map.get(topic));
+        return Optional.ofNullable(map.get(topic));
     }
 }
