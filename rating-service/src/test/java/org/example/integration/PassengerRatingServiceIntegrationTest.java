@@ -5,41 +5,19 @@ import org.example.dto.PassengerRatingDTO;
 import org.example.entities.PassengerRating;
 import org.example.repositories.PassengerRatingRepository;
 import org.example.services.PassengerRatingService;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@SpringBootTest(
-        properties = "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration"
-)
-@Testcontainers
-public class PassengerRatingServiceIntegrationTest {
+public class PassengerRatingServiceIntegrationTest extends BaseIntegrationTest{
     @Autowired
     private PassengerRatingService passengerRatingService;
     @Autowired
     private PassengerRatingRepository passengerRatingRepository;
-    @Container
-    static PostgreSQLContainer<?> database = new PostgreSQLContainer<>("postgres:latest")
-            .withDatabaseName("test")
-            .withUsername("test")
-            .withPassword("test")
-            .withReuse(true);
-
-    @DynamicPropertySource
-    static void properties(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", database::getJdbcUrl);
-        registry.add("spring.datasource.username", database::getUsername);
-        registry.add("spring.datasource.password", database::getPassword);
-    }
 
     @BeforeEach
     void setUp() {
@@ -105,5 +83,11 @@ public class PassengerRatingServiceIntegrationTest {
         passengerRatingService.create(passengerRatingDTO);
         passengerRatingService.hardDelete(passengerRatingDTO.getPassengerId());
         assertThat(passengerRatingRepository.findById(passengerRatingDTO.getPassengerId()).isEmpty()).isTrue();
+    }
+
+    @AfterAll
+    static void tearDown(){
+        kafkaContainer.stop();
+        database.stop();
     }
 }
