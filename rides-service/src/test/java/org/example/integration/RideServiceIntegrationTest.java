@@ -9,19 +9,12 @@ import org.example.exceptions.NoWaitingRideException;
 import org.example.integration.util.KafkaConsumer;
 import org.example.repositories.RideRepository;
 import org.example.services.RideService;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.kafka.ConfluentKafkaContainer;
-import org.testcontainers.utility.DockerImageName;
 
 import java.util.concurrent.TimeUnit;
 
@@ -30,34 +23,13 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
-@SpringBootTest
-@Testcontainers
-public class RideServiceIntegrationTest {
+public class RideServiceIntegrationTest extends BaseIntegrationTest{
     @Autowired
     private RideService rideService;
     @Autowired
     private RideRepository rideRepository;
     @Autowired
     private KafkaConsumer kafkaConsumer;
-    @Container
-    static PostgreSQLContainer<?> database = new PostgreSQLContainer<>("postgres:latest")
-            .withDatabaseName("testdb")
-            .withUsername("test")
-            .withPassword("test")
-            .withReuse(true);
-
-    @Container
-    static ConfluentKafkaContainer kafka = new ConfluentKafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.6.1"));
-
-    @DynamicPropertySource
-    static void properties(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", database::getJdbcUrl);
-        registry.add("spring.datasource.username", database::getUsername);
-        registry.add("spring.datasource.password", database::getPassword);
-
-        registry.add("spring.kafka.bootstrap-servers", kafka::getBootstrapServers);
-    }
     private RideDTO testRide;
 
     @BeforeEach
@@ -184,5 +156,11 @@ public class RideServiceIntegrationTest {
     @Test
     void testAttachDriverToNonExistingRide() {
         assertThrows(EntityNotFoundException.class, () -> rideService.attachDriver("driver1", 999L));
+    }
+
+    @AfterAll
+    static void tearDown(){
+        kafka.stop();
+        database.stop();
     }
 }

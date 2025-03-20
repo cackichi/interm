@@ -1,0 +1,30 @@
+package org.example.contract;
+
+import io.restassured.module.mockmvc.RestAssuredMockMvc;
+import org.example.RidesServiceApplication;
+import org.example.controllers.RideController;
+import org.example.integration.BaseIntegrationTest;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.cloud.contract.verifier.messaging.boot.AutoConfigureMessageVerifier;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.test.web.servlet.setup.StandaloneMockMvcBuilder;
+import org.springframework.web.context.WebApplicationContext;
+
+@ExtendWith(SpringExtension.class)
+@SpringBootTest(classes = RidesServiceApplication.class)
+@AutoConfigureMessageVerifier
+@DirtiesContext
+public class BaseContractClass extends BaseIntegrationTest {
+    @Autowired
+    protected WebApplicationContext context;
+
+    @BeforeEach
+    public void setup() {
+        RestAssuredMockMvc.webAppContextSetup(context);
+    }
+}
