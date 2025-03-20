@@ -13,12 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
-import org.testcontainers.containers.MongoDBContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.utility.DockerImageName;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,16 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @SpringBootTest(
         properties = "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration"
 )
-@Testcontainers
-public class CarServiceIntegrationTest {
-    @Container
-    static MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:4.0.10"));
-
-    @DynamicPropertySource
-    static void properties(DynamicPropertyRegistry registry) {
-        registry.add("spring.data.mongodb.uri", mongoDBContainer::getReplicaSetUrl);
-    }
-
+public class CarServiceIntegrationTest extends BaseIntegrationTest{
     @Autowired
     private CarService carService;
 
@@ -64,7 +49,6 @@ public class CarServiceIntegrationTest {
         );
         driverRepository.save(testDriver);
     }
-
     @Test
     void testCreateCar() {
         CarDTO carDTO = new CarDTO("ABC123", "Toyota", "black", false);

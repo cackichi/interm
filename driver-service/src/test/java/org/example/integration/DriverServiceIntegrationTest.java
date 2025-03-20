@@ -1,6 +1,5 @@
 package org.example.integration;
 
-import org.apache.kafka.clients.producer.KafkaProducer;
 import org.example.collections.Car;
 import org.example.collections.Driver;
 import org.example.dto.DriverDTO;
@@ -14,15 +13,7 @@ import org.example.services.DriverService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
-import org.testcontainers.containers.MongoDBContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.kafka.ConfluentKafkaContainer;
-import org.testcontainers.utility.DockerImageName;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -31,25 +22,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@SpringBootTest
-@Testcontainers
-public class DriverServiceIntegrationTest {
+public class DriverServiceIntegrationTest extends BaseIntegrationTest{
     @Autowired
     private DriverService driverService;
     @Autowired
     private DriverRepository driverRepository;
     @Autowired
     private KafkaConsumer kafkaConsumer;
-    @Container
-    static MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:4.0.10"));
-    @Container
-    static ConfluentKafkaContainer kafka = new ConfluentKafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.6.1"));
-
-    @DynamicPropertySource
-    static void properties(DynamicPropertyRegistry registry) {
-        registry.add("spring.kafka.bootstrap-servers", kafka::getBootstrapServers);
-        registry.add("spring.data.mongodb.uri", mongoDBContainer::getReplicaSetUrl);
-    }
 
     @BeforeEach
     void setUp() {
@@ -58,6 +37,7 @@ public class DriverServiceIntegrationTest {
 
     @Test
     void testSaveDriverAndCreateEvent() throws NotFoundException {
+        kafkaConsumer.clear();
         DriverDTO driverDTO = new DriverDTO(
                 "55",
                 "Peter",
@@ -76,7 +56,9 @@ public class DriverServiceIntegrationTest {
         assertThat(savedDriver).isNotNull().isEqualTo(driverDTO);
         assertThat(savedDriver.getCars().get(0)).isEqualTo(driverDTO.getCars().get(0));
 
-        await().atMost(3, TimeUnit.SECONDS)
+        await().atMost(5, TimeUnit.SECONDS)
+                .pollDelay(500, TimeUnit.MILLISECONDS)
+                .pollInterval(500, TimeUnit.MILLISECONDS)
                 .until(() -> kafkaConsumer.getProcessedMessages("driver-create-event-topic").isPresent());
 
         TravelEvent travelEvent = kafkaConsumer.getProcessedMessages("driver-create-event-topic").get();
@@ -109,7 +91,9 @@ public class DriverServiceIntegrationTest {
         driverService.create(driverDTO);
         driverService.softDelete(driverDTO.getId());
 
-        await().atMost(2, TimeUnit.SECONDS)
+        await().atMost(5, TimeUnit.SECONDS)
+                .pollDelay(500, TimeUnit.MILLISECONDS)
+                .pollInterval(500, TimeUnit.MILLISECONDS)
                 .until(() -> kafkaConsumer.getProcessedMessages("driver-soft-delete-event-topic").isPresent());
 
         TravelEvent travelEvent = kafkaConsumer.getProcessedMessages("driver-soft-delete-event-topic").get();
@@ -219,7 +203,9 @@ public class DriverServiceIntegrationTest {
         driverService.create(driverDTO);
         driverService.hardDelete(driverDTO.getId());
 
-        await().atMost(2, TimeUnit.SECONDS)
+        await().atMost(5, TimeUnit.SECONDS)
+                .pollDelay(500, TimeUnit.MILLISECONDS)
+                .pollInterval(500, TimeUnit.MILLISECONDS)
                 .until(() -> kafkaConsumer.getProcessedMessages("driver-hard-delete-event-topic").isPresent());
 
         TravelEvent travelEvent = kafkaConsumer.getProcessedMessages("driver-hard-delete-event-topic").get();
@@ -243,7 +229,9 @@ public class DriverServiceIntegrationTest {
         driverService.create(driverDTO);
 
         driverService.driverValidEvent(driverDTO.getId(), 33L);
-        await().atMost(2, TimeUnit.SECONDS)
+        await().atMost(5, TimeUnit.SECONDS)
+                .pollDelay(500, TimeUnit.MILLISECONDS)
+                .pollInterval(500, TimeUnit.MILLISECONDS)
                 .until(() -> kafkaConsumer.getProcessedMessages("driver-valid-event-topic").isPresent());
 
         TravelEvent travelEvent = kafkaConsumer.getProcessedMessages("driver-valid-event-topic").get();
