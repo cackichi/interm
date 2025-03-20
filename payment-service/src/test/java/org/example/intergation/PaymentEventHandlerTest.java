@@ -2,22 +2,12 @@ package org.example.intergation;
 
 import org.example.dto.TravelEvent;
 import org.example.entities.Payment;
-import org.example.intergation.testcfg.KafkaCfg;
-import org.example.intergation.testcfg.KafkaProducerConfig;
 import org.example.repositories.PaymentRepository;
 import org.example.services.PaymentService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.kafka.ConfluentKafkaContainer;
-import org.testcontainers.utility.DockerImageName;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -25,32 +15,13 @@ import java.util.concurrent.TimeUnit;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
-@SpringBootTest(classes = {KafkaProducerConfig.class, KafkaCfg.class})
-@Testcontainers
-public class PaymentEventHandlerTest {
+public class PaymentEventHandlerTest extends BaseIntegrationTest{
     @Autowired
     private PaymentService paymentService;
     @Autowired
     private PaymentRepository paymentRepository;
     @Autowired
     private KafkaTemplate<String, TravelEvent> kafkaTemplate;
-    @Container
-    static ConfluentKafkaContainer kafkaContainer = new ConfluentKafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.6.1"));
-    @Container
-    static PostgreSQLContainer<?> database = new PostgreSQLContainer<>(DockerImageName.parse("postgres:latest"))
-            .withDatabaseName("test")
-            .withUsername("test")
-            .withPassword("test")
-            .withReuse(true);
-
-    @DynamicPropertySource
-    static void properties(DynamicPropertyRegistry registry){
-        registry.add("spring.datasource.url", database::getJdbcUrl);
-        registry.add("spring.datasource.username", database::getUsername);
-        registry.add("spring.datasource.password", database::getPassword);
-
-        registry.add("spring.kafka.bootstrap-servers", kafkaContainer::getBootstrapServers);
-    }
 
     @BeforeEach
     void setUp(){
@@ -66,6 +37,8 @@ public class PaymentEventHandlerTest {
         kafkaTemplate.send("stop-travel-event-topic", String.valueOf(travelEvent.getPassengerId()), travelEvent);
 
         await().atMost(10, TimeUnit.SECONDS)
+                .pollDelay(500, TimeUnit.MILLISECONDS)
+                .pollInterval(500, TimeUnit.MILLISECONDS)
                 .untilAsserted(() -> {
                     List<Payment> payments = paymentRepository.findAll();
                     assertThat(payments).hasSize(1);

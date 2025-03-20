@@ -10,47 +10,24 @@ import org.example.exceptions.InsufficientBalanceException;
 import org.example.repositories.PaymentRepository;
 import org.example.services.BalanceService;
 import org.example.services.PaymentService;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.utility.DockerImageName;
 
 import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@SpringBootTest(
-        properties = "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration"
-)
-@Testcontainers
-public class PaymentServiceIntegrationTest {
+public class PaymentServiceIntegrationTest extends BaseIntegrationTest{
     @Autowired
     private PaymentService paymentService;
     @Autowired
     private PaymentRepository paymentRepository;
     @Autowired
     private BalanceService balanceService;
-    @Container
-    static PostgreSQLContainer<?> database = new PostgreSQLContainer<>(DockerImageName.parse("postgres:latest"))
-            .withDatabaseName("test")
-            .withUsername("test")
-            .withPassword("test")
-            .withReuse(true);
-
-    @DynamicPropertySource
-    static void properties(DynamicPropertyRegistry registry){
-        registry.add("spring.datasource.url", database::getJdbcUrl);
-        registry.add("spring.datasource.username", database::getUsername);
-        registry.add("spring.datasource.password", database::getPassword);
-    }
 
     @BeforeEach
     void setUp(){
@@ -176,9 +153,14 @@ public class PaymentServiceIntegrationTest {
                 false
         );
         Payment savedPayment = paymentService.create(paymentDTO);
-        paymentService.hardDelete(savedPayment.getId());
+        paymentRepository.deleteById(savedPayment.getId());
 
         assertThat(paymentRepository.findById(savedPayment.getId()).isEmpty())
                 .isTrue();
+    }
+    @AfterAll
+    static void tearDown(){
+        kafkaContainer.stop();
+        database.stop();
     }
 }

@@ -46,7 +46,7 @@ public class BalanceControllerTest {
         mockMvc.perform(post("/api/v1/balance")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(balanceDTO)))
-                .andExpect(status().isOk());
+                .andExpect(status().isCreated());
 
         verify(balanceService).create(balanceDTO);
     }
