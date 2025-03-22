@@ -71,7 +71,7 @@ public class DriverServiceImpl implements DriverService{
         if(!existingDriver.getStatus().equals("FREE")) throw new BusyDriverException("Водитель в поездке");
         else {
             existingDriver.setStatus(status);
-            driverRepository.save(existingDriver);
+            driverRepository.updateStatus(id, status);
         }
     }
 

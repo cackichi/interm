@@ -13,4 +13,10 @@ public class KafkaCfg {
                 .partitions(2)
                 .build();
     }
+    @Bean
+    public NewTopic stopTravelEventTopic(){
+        return TopicBuilder.name("stop-travel-event-topic")
+                .partitions(2)
+                .build();
+    }
 }

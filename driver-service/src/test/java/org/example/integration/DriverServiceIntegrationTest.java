@@ -10,6 +10,7 @@ import org.example.exceptions.NotFoundException;
 import org.example.integration.util.KafkaConsumer;
 import org.example.repositories.DriverRepository;
 import org.example.services.DriverService;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,7 +40,7 @@ public class DriverServiceIntegrationTest extends BaseIntegrationTest{
     void testSaveDriverAndCreateEvent() throws NotFoundException {
         kafkaConsumer.clear();
         DriverDTO driverDTO = new DriverDTO(
-                "55",
+                "100",
                 "Peter",
                 3,
                 "80298904563",
@@ -78,7 +79,7 @@ public class DriverServiceIntegrationTest extends BaseIntegrationTest{
     @Test
     void testSoftEvent() throws NotFoundException {
         DriverDTO driverDTO = new DriverDTO(
-                "55",
+                "100",
                 "Peter",
                 3,
                 "80298904563",
@@ -103,7 +104,7 @@ public class DriverServiceIntegrationTest extends BaseIntegrationTest{
     @Test
     void testUpdateDriver() throws NotFoundException {
         DriverDTO driverDTO = new DriverDTO(
-                "55",
+                "100",
                 "Peter",
                 3,
                 "80298904563",
@@ -124,7 +125,7 @@ public class DriverServiceIntegrationTest extends BaseIntegrationTest{
     @Test
     void testUpdateStatusForTravel() throws BusyDriverException, NotFoundException {
         DriverDTO driverDTO = new DriverDTO(
-                "55",
+                "100",
                 "Peter",
                 3,
                 "80298904563",
@@ -144,7 +145,7 @@ public class DriverServiceIntegrationTest extends BaseIntegrationTest{
     @Test
     void testUpdateStatusForTravelWithBusyStatus() throws BusyDriverException, NotFoundException {
         DriverDTO driverDTO = new DriverDTO(
-                "55",
+                "100",
                 "Peter",
                 3,
                 "80298904563",
@@ -162,7 +163,7 @@ public class DriverServiceIntegrationTest extends BaseIntegrationTest{
     @Test
     void testFindAllNotDeleted(){
         DriverDTO driverDTO = new DriverDTO(
-                "55",
+                "100",
                 "Peter",
                 3,
                 "80298904563",
@@ -190,7 +191,7 @@ public class DriverServiceIntegrationTest extends BaseIntegrationTest{
     @Test
     void testHardDeleteAndHardEvent(){
         DriverDTO driverDTO = new DriverDTO(
-                "55",
+                "100",
                 "Peter",
                 3,
                 "80298904563",
@@ -216,7 +217,7 @@ public class DriverServiceIntegrationTest extends BaseIntegrationTest{
     @Test
     void testValidEvent() throws NotFoundException {
         DriverDTO driverDTO = new DriverDTO(
-                "55",
+                "100",
                 "Peter",
                 3,
                 "80298904563",
@@ -239,5 +240,11 @@ public class DriverServiceIntegrationTest extends BaseIntegrationTest{
         assertThat(travelEvent.getRideId()).isEqualTo(33L);
         driverDTO.setStatus("BUSY");
         assertThat(driverService.findById(driverDTO.getId())).isEqualTo(driverDTO);
+    }
+
+    @AfterAll
+    static void tearDown(){
+        kafka.stop();
+        mongoDBContainer.stop();
     }
 }
