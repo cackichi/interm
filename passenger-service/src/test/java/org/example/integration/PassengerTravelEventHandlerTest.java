@@ -6,6 +6,7 @@ import org.example.entities.Passenger;
 import org.example.entities.Status;
 import org.example.repositories.PassengerRepo;
 import org.example.services.PassengerService;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -80,5 +81,11 @@ public class PassengerTravelEventHandlerTest extends BaseIntegrationTest{
                     PassengerDTO updatedPassenger = passengerService.findOne(savedPass.getId());
                     assertThat(updatedPassenger.getStatus()).isEqualTo(Status.TRAVELING);
                 });
+    }
+
+    @AfterAll
+    static void tearDown(){
+        kafka.stop();
+        database.stop();
     }
 }
