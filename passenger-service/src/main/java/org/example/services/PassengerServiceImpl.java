@@ -90,12 +90,12 @@ public class PassengerServiceImpl implements PassengerService{
         travelEvent.setPointA(pointA);
         travelEvent.setPointB(pointB);
         CompletableFuture<SendResult<String, TravelEvent>> future = kafkaTemplate.send("order-taxi-event-topic", String.valueOf(id), travelEvent);
-
         future.whenComplete((result, exception) -> {
             if(exception != null){
                 log.error("Field to send message: {}", exception.getMessage());
             } else {
                 log.info("Order taxi topic work successfully: {}", result.getRecordMetadata());
+                travelEventUpdate(Status.WAITING, id);
             }
         });
     }

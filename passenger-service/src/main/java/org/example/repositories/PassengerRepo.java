@@ -1,5 +1,6 @@
 package org.example.repositories;
 
+import jakarta.transaction.Transactional;
 import org.example.entities.Passenger;
 import org.example.entities.Status;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -37,5 +38,6 @@ public interface PassengerRepo extends JpaRepository<Passenger, Long> {
 
     @Modifying
     @Query("UPDATE Passenger p SET p.status = :newStatus WHERE p.id = :passengerId")
+    @Transactional
     void updateBecauseOfTravel(@Param("newStatus") Status newStatus, @Param("passengerId") Long passengerId);
 }
