@@ -1,24 +1,33 @@
-package org.example.integration;
+package org.example.endtoend.steps;
 
+import io.cucumber.spring.CucumberContextConfiguration;
+import org.example.RidesServiceApplication;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.kafka.ConfluentKafkaContainer;
 import org.testcontainers.utility.DockerImageName;
 
-@SpringBootTest
-@Testcontainers
-public abstract class BaseIntegrationTest {
+@CucumberContextConfiguration
+@SpringBootTest(classes =
+        RidesServiceApplication.class,
+        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+        properties = {
+                "eureka.client.enabled=false",
+                "eureka.client.register-with-eureka=false",
+                "eureka.client.fetch-registry=false"
+        }
+)
+public class CucumberConfig {
+    @Container
     static PostgreSQLContainer<?> database = new PostgreSQLContainer<>("postgres:latest")
             .withDatabaseName("testdb")
             .withUsername("test")
-            .withPassword("test")
-            .withReuse(true);
-
-    static ConfluentKafkaContainer kafka = new ConfluentKafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.6.1"))
-            .withReuse(true);
+            .withPassword("test");
+    @Container
+    static ConfluentKafkaContainer kafka = new ConfluentKafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.6.1"));
 
     @DynamicPropertySource
     static void properties(DynamicPropertyRegistry registry) {

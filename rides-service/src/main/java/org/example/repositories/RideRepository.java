@@ -39,6 +39,8 @@ public interface RideRepository extends JpaRepository<Ride, Long> {
     @Query(value = "SELECT * FROM ride r WHERE r.status = 'TRAVELING' AND r.driver_id = :driverId LIMIT 1", nativeQuery = true)
     Optional<Ride> findAfterStopTravel(@Param("driverId") String driverId);
 
+    @Query(value = "SELECT * FROM ride r WHERE r.status = :status AND r.driver_id = :driverId LIMIT 1", nativeQuery = true)
+    Optional<Ride> findByDriverIdAndStatus(@Param("driverId") String driverId, @Param("status") String status);
     @Modifying
     @Query("UPDATE Ride r SET r.status = 'TRAVELING', r.driverId = :driverId WHERE r.id = :rideId")
     int attachDriver(@Param("driverId") String driverId, @Param("rideId") Long rideId);
