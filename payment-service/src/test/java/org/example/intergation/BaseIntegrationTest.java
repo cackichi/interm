@@ -13,7 +13,8 @@ import org.testcontainers.utility.DockerImageName;
 @SpringBootTest(classes = {KafkaProducerConfig.class, KafkaCfg.class})
 @Testcontainers
 public class BaseIntegrationTest {
-    static ConfluentKafkaContainer kafkaContainer = new ConfluentKafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.6.1"));
+    static ConfluentKafkaContainer kafkaContainer = new ConfluentKafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.6.1"))
+            .withReuse(true);
     static PostgreSQLContainer<?> database = new PostgreSQLContainer<>(DockerImageName.parse("postgres:latest"))
             .withDatabaseName("test")
             .withUsername("test")
