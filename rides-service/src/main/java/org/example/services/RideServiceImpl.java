@@ -40,9 +40,9 @@ public class RideServiceImpl implements RideService{
     }
 
     @Override
-    public void create(RideDTO rideDTO){
+    public RideDTO create(RideDTO rideDTO){
         rideDTO.setStatus(Status.WAITING);
-        rideRepository.save(mapToRide(rideDTO));
+        return mapToDTO(rideRepository.save(mapToRide(rideDTO)));
     }
 
     @Override
