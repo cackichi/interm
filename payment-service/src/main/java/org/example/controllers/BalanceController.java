@@ -25,7 +25,7 @@ public class BalanceController {
             @RequestBody @Parameter(required = true) BalanceDTO balanceDTO
     ) {
         balanceService.create(balanceDTO);
-        return ResponseEntity.status(HttpStatus.OK).build();
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @GetMapping("/{passengerId}")

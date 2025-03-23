@@ -16,5 +16,5 @@ public interface BalanceService {
 
     void hardDelete(Long passengerId);
 
-    void create(BalanceDTO balanceDTO);
+    Balance create(BalanceDTO balanceDTO);
 }
