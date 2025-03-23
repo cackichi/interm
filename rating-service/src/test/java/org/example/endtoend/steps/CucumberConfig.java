@@ -1,4 +1,4 @@
-package org.example.component.steps;
+package org.example.endtoend.steps;
 
 import io.cucumber.spring.CucumberContextConfiguration;
 import org.example.RatingServiceApplication;
@@ -20,7 +20,7 @@ import org.testcontainers.utility.DockerImageName;
                 "eureka.client.fetch-registry=false"
         }
 )
-public class CucumberConfiguration {
+public class CucumberConfig {
     @Container
     static PostgreSQLContainer<?> database = new PostgreSQLContainer<>("postgres:latest")
             .withDatabaseName("testdb")
@@ -31,10 +31,11 @@ public class CucumberConfiguration {
 
     @DynamicPropertySource
     static void properties(DynamicPropertyRegistry registry) {
-        registry.add("spring.kafka.bootstrap-servers", kafka::getBootstrapServers);
         registry.add("spring.datasource.url", database::getJdbcUrl);
         registry.add("spring.datasource.username", database::getUsername);
         registry.add("spring.datasource.password", database::getPassword);
+
+        registry.add("spring.kafka.bootstrap-servers", kafka::getBootstrapServers);
     }
 
     static {
