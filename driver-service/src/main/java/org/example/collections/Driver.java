@@ -13,6 +13,7 @@ import java.util.List;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode
 @Document(collection = "driver")
 public class Driver {
     @Id
@@ -30,6 +31,7 @@ public class Driver {
     @Field("status")
     private String status;
     @Field("cars")
+    @EqualsAndHashCode.Exclude
     private List<Car> cars = new ArrayList<>();
 
     public void addCar(String id, String brand, String color) {

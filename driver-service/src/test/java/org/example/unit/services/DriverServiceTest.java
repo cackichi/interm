@@ -135,7 +135,7 @@ class DriverServiceTest {
         driverService.updateStatusForTravel(driver.getId(), "BUSY");
 
         verify(driverRepository).findById(driver.getId());
-        verify(driverRepository).save(argThat(d -> d.getStatus().equals("BUSY")));
+        verify(driverRepository).updateStatus(driver.getId(), "BUSY");
 
         driver.setStatus("BUSY");
         assertThrows(BusyDriverException.class, () -> driverService.updateStatusForTravel(driver.getId(), "BUSY"));
@@ -204,6 +204,6 @@ class DriverServiceTest {
         verify(kafkaTemplate).send(eq("driver-valid-event-topic"),
                 anyString(), argThat(t -> t.getDriverId().equals(driver.getId()) && t.getRideId().equals(10L)));
         verify(driverRepository).findById(driver.getId());
-        verify(driverRepository).save(argThat(d -> d.getStatus().equals("BUSY")));
+        verify(driverRepository).updateStatus(driver.getId(), "BUSY");
     }
 }

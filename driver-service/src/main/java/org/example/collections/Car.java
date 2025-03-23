@@ -9,6 +9,7 @@ import org.springframework.data.mongodb.core.mapping.Field;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode
 public class Car {
     @Id
     private String number;
