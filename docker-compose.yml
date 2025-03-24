@@ -1,7 +1,7 @@
 services:
   mongodb:
     image: mongo:latest
-    container_name: "mongodb"
+    container_name: mongodb
     environment:
       MONGO_INITDB_ROOT_USERNAME: fedor
       MONGO_INITDB_ROOT_PASSWORD: fedor
@@ -9,6 +9,8 @@ services:
       - 27017:27017
     volumes:
       - ./mongodb-data:/data/db
+    networks:
+      - my_network
 
   pg1:
     image: postgres
@@ -39,67 +41,6 @@ services:
       - "5436:5432"
     networks:
       - my_network
-
-#  eureka-server:
-#    container_name: eureka-server
-#    build:
-#      context: .
-#      dockerfile: Dockerfile
-#      target: eureka-server
-#    restart: always
-#    ports:
-#      - '8080:8080'
-#    networks:
-#      - my_network
-#
-#  gateway-service:
-#    container_name: gateway-service
-#    build:
-#      context: .
-#      dockerfile: Dockerfile
-#      target: gateway-service
-#    restart: always
-#    ports:
-#      - '8081:8081'
-#    networks:
-#      - my_network
-#
-#
-#  driver-service:
-#    container_name: driver-service
-#    build:
-#      context: .
-#      dockerfile: Dockerfile
-#      target: driver-service
-#    restart: always
-#    networks:
-#      - my_network
-#    depends_on:
-#      - mongo
-#
-#  rides-service:
-#    container_name: rides-service
-#    build:
-#      context: .
-#      dockerfile: Dockerfile
-#      target: rides-service
-#    restart: always
-#    networks:
-#      - my_network
-#    depends_on:
-#      - pg1
-#
-#  passenger-service:
-#    container_name: passenger-service
-#    build:
-#      context: .
-#      dockerfile: Dockerfile
-#      target: passenger-service
-#    restart: always
-#    networks:
-#      - my_network
-#    depends_on:
-#      - pg2
 
   keycloak:
     image: quay.io/keycloak/keycloak:25.0.2
@@ -232,6 +173,131 @@ services:
     networks:
       - my_network
 
+  eureka-server:
+    build:
+      context: ./eureka-server
+      dockerfile: Dockerfile
+    container_name: eureka-server
+    ports:
+      - "8080:8080"
+    networks:
+      - my_network
+    depends_on:
+      - pg1
+      - pg2
+      - pg3
+      - pg4
+      - mongodb
+      - kafka
+      - redis
+
+  driver-service:
+      build:
+        context: ./driver-service
+        dockerfile: Dockerfile
+      container_name: driver-service
+      environment:
+        SPRING_DATA_MONGODB_URI: "mongodb://fedor:fedor@mongodb:27017/drivers?authSource=admin"
+        SPRING_DATA_MONGODB_HOST: mongodb
+        SPRING_DATA_MONGODB_PORT: 27017
+        SPRING_DATA_MONGODB_USERNAME: fedor
+        SPRING_DATA_MONGODB_PASSWORD: fedor
+        SPRING_DATA_MONGODB_DATABASE: drivers
+        SPRING_DATA_MONGODB_AUTHENTICATION_DATABASE: admin
+        SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9090
+        EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka-server:8080/eureka
+      networks:
+        - my_network
+      depends_on:
+        - eureka-server
+        - mongodb
+
+  passenger-service:
+      build:
+        context: ./passenger-service
+        dockerfile: Dockerfile
+      container_name: passenger-service
+      environment:
+        SPRING_DATASOURCE_URL: jdbc:postgresql://pg1:5432/pg1
+        SPRING_DATASOURCE_USERNAME: fedor
+        SPRING_DATASOURCE_PASSWORD: fedor
+        SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9090
+        EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka-server:8080/eureka
+      networks:
+        - my_network
+      depends_on:
+        - eureka-server
+
+  payment-service:
+      build:
+        context: ./payment-service
+        dockerfile: Dockerfile
+      container_name: payment-service
+      environment:
+        SPRING_DATASOURCE_URL: jdbc:postgresql://pg4:5432/pg4
+        SPRING_DATASOURCE_USERNAME: fedor
+        SPRING_DATASOURCE_PASSWORD: fedor
+        SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9090
+        EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka-server:8080/eureka
+      networks:
+        - my_network
+      depends_on:
+        - eureka-server
+
+  rating-service:
+      build:
+        context: ./rating-service
+        dockerfile: Dockerfile
+      container_name: rating-service
+      environment:
+        SPRING_DATASOURCE_URL: jdbc:postgresql://pg3:5432/pg3
+        SPRING_DATASOURCE_USERNAME: fedor
+        SPRING_DATASOURCE_PASSWORD: fedor
+        SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9090
+        EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka-server:8080/eureka
+      networks:
+        - my_network
+      depends_on:
+        - eureka-server
+
+  rides-service:
+      build:
+        context: ./rides-service
+        dockerfile: Dockerfile
+      container_name: rides-service
+      environment:
+        SPRING_DATASOURCE_URL: jdbc:postgresql://pg2:5432/pg2
+        SPRING_DATASOURCE_USERNAME: fedor
+        SPRING_DATASOURCE_PASSWORD: fedor
+        SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9090
+        EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka-server:8080/eureka
+      networks:
+        - my_network
+      depends_on:
+        - eureka-server
+
+  gateway-service:
+      build:
+        context: ./gateway-service
+        dockerfile: Dockerfile
+      container_name: gateway-service
+      environment:
+        EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka-server:8080/eureka
+        EUREKA_INSTANCE_PREFER_IP_ADDRESS: "true"
+        SPRING_CLOUD_GATEWAY_DISCOVERY_LOCATOR_ENABLED: "true"
+        SPRING_CLOUD_GATEWAY_DISCOVERY_LOCATOR_LOWER_CASE_SERVICE_ID: "true"
+      ports:
+        - "8081:8081"
+      networks:
+        - my_network
+      depends_on:
+        - eureka-server
+        - passenger-service
+        - driver-service
+        - rides-service
+        - rating-service
+        - payment-service
+
 volumes:
   mongodb:
   pg1:
@@ -239,6 +305,7 @@ volumes:
   redis:
   pg4:
   pg3:
+  keycloakdb:
 
 networks:
   my_network:

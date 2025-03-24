@@ -64,7 +64,6 @@ public class DriverServiceImpl implements DriverService{
     }
 
     @Override
-    @Transactional
     public void updateStatusForTravel(String id, String status) throws NotFoundException, BusyDriverException {
         Optional<Driver> driverOptional = driverRepository.findById(id);
         Driver existingDriver = driverOptional.orElseThrow(() -> new NotFoundException("Такой водитель не найден"));

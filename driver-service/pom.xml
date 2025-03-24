@@ -11,6 +11,8 @@
     </parent>
 
     <artifactId>driver-service</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <groupId>org.example</groupId>
 
     <properties>
         <java.version>17</java.version>
@@ -170,6 +172,9 @@
                             <artifactId>lombok</artifactId>
                         </exclude>
                     </excludes>
+                    <layers>
+                        <enabled>true</enabled>
+                    </layers>
                 </configuration>
             </plugin>
             <plugin>

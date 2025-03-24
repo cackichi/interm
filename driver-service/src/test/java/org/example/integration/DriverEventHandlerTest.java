@@ -38,7 +38,7 @@ public class DriverEventHandlerTest extends BaseIntegrationTest{
                 "80298904563",
                 "driverLui@gmail.com",
                 false,
-                "FREE",
+                "BUSY",
                 List.of(new Car("7458", "AUDI", "white", false))
         );
 
