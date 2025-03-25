@@ -14,7 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/drivers/rating")
+@RequestMapping("/api/v1/rating/drivers")
 @AllArgsConstructor
 @Tag(name = "Пользовательский контроллер водительских оценок", description = "Взаимодействие с рейтингом водителя")
 public class DriverRatingController {
