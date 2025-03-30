@@ -1,5 +1,6 @@
 package org.example.unit.services;
 
+import io.micrometer.tracing.Tracer;
 import jakarta.persistence.EntityNotFoundException;
 import org.example.dto.RideDTO;
 import org.example.dto.RidePageDTO;
@@ -35,6 +36,8 @@ public class RideServiceTest {
     private KafkaTemplate<String, TravelEvent> kafkaTemplate;
     @Mock
     private ModelMapper modelMapper;
+    @Mock
+    private Tracer tracer;
     @InjectMocks
     private RideServiceImpl rideService;
     private Ride ride;
@@ -84,6 +87,7 @@ public class RideServiceTest {
     void create(){
         when(modelMapper.map(rideDTO, Ride.class))
                 .thenReturn(ride);
+        when(rideRepository.save(ride)).thenReturn(ride);
         rideService.create(rideDTO);
         verify(rideRepository).save(ride);
     }

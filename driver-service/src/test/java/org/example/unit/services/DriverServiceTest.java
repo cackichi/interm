@@ -1,5 +1,6 @@
 package org.example.unit.services;
 
+import io.micrometer.tracing.Tracer;
 import org.example.collections.Driver;
 import org.example.dto.DriverDTO;
 import org.example.dto.DriverPageDTO;
@@ -38,6 +39,8 @@ class DriverServiceTest {
     private DriverRepository driverRepository;
     @InjectMocks
     private DriverServiceImpl driverService;
+    @Mock
+    private Tracer tracer;
     @Mock
     private ModelMapper modelMapper;
     @Mock

@@ -42,7 +42,7 @@ class DriverRatingControllerTest {
     @Test
     void testFindRating() throws Exception {
         when(driverRatingService.findRating(driverRatingDTO.getDriverId())).thenReturn(driverRatingDTO.getAverageRating());
-        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/drivers/rating/{id}",driverRatingDTO.getDriverId()))
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/rating/drivers/{id}",driverRatingDTO.getDriverId()))
                 .andExpect(status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.message").exists());
         verify(driverRatingService).findRating(driverRatingDTO.getDriverId());
@@ -50,7 +50,7 @@ class DriverRatingControllerTest {
 
     @Test
     void testUpdateRating() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.patch("/api/v1/drivers/rating/{id}",driverRatingDTO.getDriverId())
+        mockMvc.perform(MockMvcRequestBuilders.patch("/api/v1/rating/drivers/{id}",driverRatingDTO.getDriverId())
                         .param("rating", "4"))
                 .andExpect(status().isNoContent());
         verify(driverRatingService).updateOrSaveRating(driverRatingDTO.getDriverId(), 4);
@@ -58,14 +58,14 @@ class DriverRatingControllerTest {
 
     @Test
     void testSoftDelete() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/drivers/rating/{id}",driverRatingDTO.getDriverId()))
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/rating/drivers/{id}",driverRatingDTO.getDriverId()))
                 .andExpect(status().isNoContent());
         verify(driverRatingService).softDelete(driverRatingDTO.getDriverId());
     }
 
     @Test
     void testCreate() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/drivers/rating")
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/rating/drivers")
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(driverRatingDTO)))
                 .andExpect(status().isCreated());

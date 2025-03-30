@@ -1,7 +1,5 @@
 package org.example.intergation;
 
-import org.example.intergation.testcfg.KafkaCfg;
-import org.example.intergation.testcfg.KafkaProducerConfig;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -10,7 +8,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.kafka.ConfluentKafkaContainer;
 import org.testcontainers.utility.DockerImageName;
 
-@SpringBootTest(classes = {KafkaProducerConfig.class, KafkaCfg.class})
+@SpringBootTest
 @Testcontainers
 public class BaseIntegrationTest {
     static ConfluentKafkaContainer kafkaContainer = new ConfluentKafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.6.1"))

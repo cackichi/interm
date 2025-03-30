@@ -1,7 +1,5 @@
 package org.example.integration;
 
-import org.example.integration.testcfg.KafkaConfig;
-import org.example.integration.testcfg.KafkaProducerConfig;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -10,7 +8,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.kafka.ConfluentKafkaContainer;
 import org.testcontainers.utility.DockerImageName;
 
-@SpringBootTest(classes = {KafkaProducerConfig.class, KafkaConfig.class})
+@SpringBootTest
 @Testcontainers
 public abstract class BaseIntegrationTest {
     static PostgreSQLContainer<?> database = new PostgreSQLContainer<>("postgres:latest")

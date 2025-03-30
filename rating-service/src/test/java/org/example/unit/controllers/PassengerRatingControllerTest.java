@@ -42,7 +42,7 @@ class PassengerRatingControllerTest {
     @Test
     void testFindRating() throws Exception {
         when(passengerRatingService.findRating(passengerRatingDTO.getPassengerId())).thenReturn(passengerRatingDTO.getAverageRating());
-        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/passenger/rating/{id}",passengerRatingDTO.getPassengerId()))
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/rating/passenger/{id}",passengerRatingDTO.getPassengerId()))
                 .andExpect(status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.message").exists());
         verify(passengerRatingService).findRating(passengerRatingDTO.getPassengerId());
@@ -50,7 +50,7 @@ class PassengerRatingControllerTest {
 
     @Test
     void testUpdateRating() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.patch("/api/v1/passenger/rating/{id}",passengerRatingDTO.getPassengerId())
+        mockMvc.perform(MockMvcRequestBuilders.patch("/api/v1/rating/passenger/{id}",passengerRatingDTO.getPassengerId())
                         .param("rating", "4"))
                 .andExpect(status().isNoContent());
         verify(passengerRatingService).updateOrSaveRating(passengerRatingDTO.getPassengerId(), 4);
@@ -58,14 +58,14 @@ class PassengerRatingControllerTest {
 
     @Test
     void testSoftDelete() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/passenger/rating/{id}",passengerRatingDTO.getPassengerId()))
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/rating/passenger/{id}",passengerRatingDTO.getPassengerId()))
                 .andExpect(status().isNoContent());
         verify(passengerRatingService).softDelete(passengerRatingDTO.getPassengerId());
     }
 
     @Test
     void testCreate() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/passenger/rating")
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/rating/passenger")
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(passengerRatingDTO)))
                 .andExpect(status().isCreated());

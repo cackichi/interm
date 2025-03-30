@@ -1,5 +1,6 @@
 package org.example.unit.services;
 
+import io.micrometer.tracing.Tracer;
 import org.example.dto.PassengerDTO;
 import org.example.dto.PassengerPageDTO;
 import org.example.dto.TravelEvent;
@@ -33,6 +34,8 @@ class PassengerServiceTest {
     private PassengerRepo passengerRepo;
     @Mock
     private ModelMapper modelMapper;
+    @Mock
+    private Tracer tracer;
     @Mock
     private KafkaTemplate<String, TravelEvent> kafkaTemplate;
     @InjectMocks

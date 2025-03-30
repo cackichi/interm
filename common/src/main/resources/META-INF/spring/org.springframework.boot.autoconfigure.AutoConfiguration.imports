@@ -1,0 +1,4 @@
+org.example.kafka.KafkaConfig
+org.example.kafka.KafkaConsumerConfig
+org.example.kafka.KafkaProducerConfig
+org.example.mapper.ModelMapperCfg

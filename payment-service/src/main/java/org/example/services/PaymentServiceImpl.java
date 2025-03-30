@@ -5,6 +5,7 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.example.dto.PaymentDTO;
 import org.example.dto.PaymentPageDTO;
 import org.example.entities.Balance;
@@ -21,6 +22,7 @@ import java.util.List;
 
 @Service
 @AllArgsConstructor
+@Slf4j
 public class PaymentServiceImpl implements PaymentService{
     private final PaymentRepository paymentRepository;
     private final ModelMapper modelMapper;
@@ -39,11 +41,15 @@ public class PaymentServiceImpl implements PaymentService{
     @Transactional
     public Payment create(PaymentDTO paymentDTO) {
         paymentDTO.setStatus(Status.WAITING);
+        log.info("Creating new payment for ride {}", paymentDTO.getRideId());
         return paymentRepository.save(mapToPayment(paymentDTO));
     }
+
     @Override
     @Transactional
     public void closePayment(Long passengerId) throws InsufficientBalanceException {
+        log.info("Closing payment for passenger {}", passengerId);
+
         TypedQuery<Payment> paymentQuery = entityManager.createQuery(
                 "SELECT p FROM Payment p WHERE p.passengerId = :passengerId AND p.status != 'PAID'",
                 Payment.class
@@ -58,7 +64,11 @@ public class PaymentServiceImpl implements PaymentService{
 
         Payment payment = paymentQuery.getResultList().stream()
                 .findFirst()
-                .orElseThrow(() -> new EntityNotFoundException("Нет не оплаченных платежей"));
+                .orElseThrow(() -> {
+                    log.error("No unpaid payments found for passenger {}", passengerId);
+                    return new EntityNotFoundException("Нет не оплаченных платежей");
+                });
+
         Balance balance = balanceQuery.getSingleResult();
 
         if (balance.getBalance() >= payment.getCost()) {
@@ -67,24 +77,29 @@ public class PaymentServiceImpl implements PaymentService{
 
             entityManager.merge(payment);
             entityManager.merge(balance);
+            log.debug("Payment {} closed successfully", payment.getId());
         } else {
+            log.error("Insufficient balance for passenger {}", passengerId);
             throw new InsufficientBalanceException("Недостаточно средств на балансе");
         }
-
     }
+
     @Override
-    public PaymentPageDTO getUnpaid(Long passengerId, Pageable pageable){
+    public PaymentPageDTO getUnpaid(Long passengerId, Pageable pageable) {
+        log.debug("Getting unpaid payments for passenger {}", passengerId);
         List<Payment> unpaidPayments = paymentRepository.getUnpaid(passengerId);
         return getPage(unpaidPayments, pageable);
     }
+
     @Override
-    public PaymentPageDTO getPaid(Long passengerId, Pageable pageable){
+    public PaymentPageDTO getPaid(Long passengerId, Pageable pageable) {
+        log.debug("Getting paid payments for passenger {}", passengerId);
         List<Payment> paidPayments = paymentRepository.getPaid(passengerId);
         return getPage(paidPayments, pageable);
     }
 
     @Override
-    public PaymentPageDTO getPage(List<Payment> payments, Pageable pageable){
+    public PaymentPageDTO getPage(List<Payment> payments, Pageable pageable) {
         int totalPayments = payments.size();
         int start = Math.toIntExact(pageable.getOffset());
         int end = Math.min(start + pageable.getPageSize(), totalPayments);
@@ -101,14 +116,18 @@ public class PaymentServiceImpl implements PaymentService{
                 pageable.getPageNumber()
         );
     }
+
     @Override
     @Transactional
-    public void softDelete(Long passengerId){
+    public void softDelete(Long passengerId) {
+        log.info("Soft deleting payments for passenger {}", passengerId);
         paymentRepository.softDelete(passengerId);
     }
+
     @Override
     @Transactional
-    public void hardDelete(Long passengerId){
+    public void hardDelete(Long passengerId) {
+        log.info("Hard deleting payments for passenger {}", passengerId);
         paymentRepository.deleteByPassengerId(passengerId);
     }
 }

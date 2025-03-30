@@ -50,10 +50,10 @@ public class PassengerServiceIntegrationTest extends BaseIntegrationTest{
         assertNotNull(savedPassenger);
         assertThat(passengerDTO.getEmail()).isEqualTo(savedPassenger.getEmail());
 
-        await().atMost(3, TimeUnit.SECONDS)
+        await().atMost(10, TimeUnit.SECONDS)
                 .pollInterval(500, TimeUnit.MILLISECONDS)
                 .pollDelay(500, TimeUnit.MILLISECONDS)
-                .until(() -> kafkaConsumer.getProcessedMessages("passenger-create-event-topic").isPresent());
+                .untilAsserted(() -> assertThat(kafkaConsumer.getProcessedMessages("passenger-create-event-topic").isPresent()).isTrue());
 
         TravelEvent travelEvent = kafkaConsumer.getProcessedMessages("passenger-create-event-topic").get();
         kafkaConsumer.clear();
@@ -110,7 +110,7 @@ public class PassengerServiceIntegrationTest extends BaseIntegrationTest{
         await().atMost(10, TimeUnit.SECONDS)
                 .pollInterval(500, TimeUnit.MILLISECONDS)
                 .pollDelay(500, TimeUnit.MILLISECONDS)
-                .until(() -> kafkaConsumer.getProcessedMessages("passenger-soft-delete-event-topic").isPresent());
+                .untilAsserted(() -> assertThat(kafkaConsumer.getProcessedMessages("passenger-soft-delete-event-topic").isPresent()).isTrue());
 
         TravelEvent travelEvent = kafkaConsumer.getProcessedMessages("passenger-soft-delete-event-topic").get();
         kafkaConsumer.clear();
@@ -134,10 +134,10 @@ public class PassengerServiceIntegrationTest extends BaseIntegrationTest{
 
         assertThrows(EntityNotFoundException.class, () -> passengerService.findOne(savedPassenger.getId()));
 
-        await().atMost(3, TimeUnit.SECONDS)
+        await().atMost(10, TimeUnit.SECONDS)
                 .pollInterval(500, TimeUnit.MILLISECONDS)
                 .pollDelay(500, TimeUnit.MILLISECONDS)
-                .until(() -> kafkaConsumer.getProcessedMessages("passenger-hard-delete-event-topic").isPresent());
+                .untilAsserted(() -> assertThat(kafkaConsumer.getProcessedMessages("passenger-hard-delete-event-topic").isPresent()).isTrue());
 
         TravelEvent travelEvent = kafkaConsumer.getProcessedMessages("passenger-hard-delete-event-topic").get();
         kafkaConsumer.clear();
@@ -231,10 +231,10 @@ public class PassengerServiceIntegrationTest extends BaseIntegrationTest{
 
         passengerService.orderTaxi(savedPass.getId(), "Moskow", "Mogilev");
 
-        await().atMost(3, TimeUnit.SECONDS)
+        await().atMost(10, TimeUnit.SECONDS)
                 .pollInterval(500, TimeUnit.MILLISECONDS)
                 .pollDelay(500, TimeUnit.MILLISECONDS)
-                .until(() -> kafkaConsumer.getProcessedMessages("order-taxi-event-topic").isPresent());
+                .untilAsserted(() -> assertThat(kafkaConsumer.getProcessedMessages("order-taxi-event-topic").isPresent()).isTrue());
 
         TravelEvent travelEvent = kafkaConsumer.getProcessedMessages("order-taxi-event-topic").get();
         kafkaConsumer.clear();

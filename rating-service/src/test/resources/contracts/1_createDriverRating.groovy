@@ -5,7 +5,7 @@ import org.springframework.cloud.contract.spec.Contract
 Contract.make {
     request {
         method 'POST'
-        url '/api/v1/drivers/rating'
+        url '/api/v1/rating/drivers'
         headers {
             contentType('application/json')
         }

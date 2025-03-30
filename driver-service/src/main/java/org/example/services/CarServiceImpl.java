@@ -1,6 +1,7 @@
 package org.example.services;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.example.collections.Car;
 import org.example.collections.Driver;
 import org.example.dto.CarDTO;
@@ -21,7 +22,8 @@ import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
-public class CarServiceImpl implements CarService{
+@Slf4j
+public class CarServiceImpl implements CarService {
     private final DriverRepository driverRepository;
     private final ModelMapper modelMapper;
     private final MongoTemplate mongoTemplate;
@@ -29,16 +31,19 @@ public class CarServiceImpl implements CarService{
     @Transactional
     @Override
     public void removeCarFromDriver(String driverId, String number) {
+        log.info("Removing car {} from driver {}", number, driverId);
         Query query = Query.query(Criteria.where("_id").is(driverId));
         Update update = new Update();
         update.pull("cars", Query.query(Criteria.where("number").is(number)));
 
         mongoTemplate.updateFirst(query, update, Driver.class);
+        log.debug("Car {} removed from driver {}", number, driverId);
     }
 
     @Transactional
     @Override
-    public void updateCar(String driverId, CarDTO carDTO){
+    public void updateCar(String driverId, CarDTO carDTO) {
+        log.info("Updating car {} for driver {}", carDTO.getNumber(), driverId);
         Query query = Query.query(
                 new Criteria().andOperator(
                         Criteria.where("_id").is(driverId),
@@ -53,22 +58,27 @@ public class CarServiceImpl implements CarService{
             update.set("cars.$.color", carDTO.getColor());
         }
         mongoTemplate.updateFirst(query, update, Driver.class);
+        log.debug("Car {} updated for driver {}", carDTO.getNumber(), driverId);
     }
 
     @Override
-    public Car mapToCar(CarDTO carDTO){
+    public Car mapToCar(CarDTO carDTO) {
         return modelMapper.map(carDTO, Car.class);
     }
 
     @Override
-    public CarDTO mapToDTO(Car car){
+    public CarDTO mapToDTO(Car car) {
         return modelMapper.map(car, CarDTO.class);
     }
 
     @Override
     public CarPageDTO findCars(String driverId, Pageable pageable) {
+        log.debug("Finding cars for driver {}, page {}, size {}",
+                driverId, pageable.getPageNumber(), pageable.getPageSize());
+
         Driver driver = driverRepository.findCarsById(driverId);
         if (driver == null || driver.getCars() == null) {
+            log.warn("No cars found for driver {}", driverId);
             return new CarPageDTO(List.of(), 0, 0, pageable.getPageSize(), pageable.getPageNumber());
         }
 
@@ -83,22 +93,34 @@ public class CarServiceImpl implements CarService{
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
 
-        return new CarPageDTO(carDTOs, totalCars, (int) Math.ceil((double) totalCars / pageable.getPageSize()), pageable.getPageSize(), pageable.getPageNumber());
+        log.debug("Found {} cars for driver {}", carDTOs.size(), driverId);
+        return new CarPageDTO(carDTOs, totalCars,
+                (int) Math.ceil((double) totalCars / pageable.getPageSize()),
+                pageable.getPageSize(), pageable.getPageNumber());
     }
-
 
     @Override
     public CarDTO findCar(String id, String number) throws NotFoundException {
-        Driver driver = driverRepository.findById(id).orElseThrow(() -> new NotFoundException("Водитель с таким айди не найден"));
+        log.debug("Looking for car {} of driver {}", number, id);
+        Driver driver = driverRepository.findById(id)
+                .orElseThrow(() -> {
+                    log.warn("Driver not found with ID: {}", id);
+                    return new NotFoundException("Водитель с таким айди не найден");
+                });
+
         return driver.getCars().stream()
                 .filter(car -> car.getNumber().equals(number))
                 .map(this::mapToDTO)
                 .findFirst()
-                .orElseThrow(() -> new NotFoundException("Машина с таким номером не найден"));
+                .orElseThrow(() -> {
+                    log.warn("Car not found with number: {} for driver {}", number, id);
+                    return new NotFoundException("Машина с таким номером не найден");
+                });
     }
 
     @Override
-    public void create(String driverId, CarDTO carDTO){
+    public void create(String driverId, CarDTO carDTO) {
+        log.info("Creating new car {} for driver {}", carDTO.getNumber(), driverId);
         Car car = mapToCar(carDTO);
         Query query = Query.query(
                 new Criteria().andOperator(
@@ -110,5 +132,6 @@ public class CarServiceImpl implements CarService{
         update.addToSet("cars", car);
 
         mongoTemplate.updateFirst(query, update, Driver.class);
+        log.debug("Car {} created for driver {}", carDTO.getNumber(), driverId);
     }
 }

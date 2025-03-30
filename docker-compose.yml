@@ -190,6 +190,9 @@ services:
       - mongodb
       - kafka
       - redis
+      - logstash
+      - zipkin
+      - elasticsearch
 
   driver-service:
       build:
@@ -205,6 +208,8 @@ services:
         SPRING_DATA_MONGODB_DATABASE: drivers
         SPRING_DATA_MONGODB_AUTHENTICATION_DATABASE: admin
         SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9090
+        ZIPKIN_HOST: http://zipkin:9411
+        ELASTIC_HOST: http://elasticsearch:9200
         EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka-server:8080/eureka
       networks:
         - my_network
@@ -222,6 +227,8 @@ services:
         SPRING_DATASOURCE_USERNAME: fedor
         SPRING_DATASOURCE_PASSWORD: fedor
         SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9090
+        ZIPKIN_HOST: http://zipkin:9411
+        ELASTIC_HOST: http://elasticsearch:9200
         EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka-server:8080/eureka
       networks:
         - my_network
@@ -238,6 +245,8 @@ services:
         SPRING_DATASOURCE_USERNAME: fedor
         SPRING_DATASOURCE_PASSWORD: fedor
         SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9090
+        ZIPKIN_HOST: http://zipkin:9411
+        ELASTIC_HOST: http://elasticsearch:9200
         EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka-server:8080/eureka
       networks:
         - my_network
@@ -254,6 +263,8 @@ services:
         SPRING_DATASOURCE_USERNAME: fedor
         SPRING_DATASOURCE_PASSWORD: fedor
         SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9090
+        ZIPKIN_HOST: http://zipkin:9411
+        ELASTIC_HOST: http://elasticsearch:9200
         EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka-server:8080/eureka
       networks:
         - my_network
@@ -270,6 +281,8 @@ services:
         SPRING_DATASOURCE_USERNAME: fedor
         SPRING_DATASOURCE_PASSWORD: fedor
         SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9090
+        ZIPKIN_HOST: http://zipkin:9411
+        ELASTIC_HOST: http://elasticsearch:9200
         EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka-server:8080/eureka
       networks:
         - my_network
@@ -284,7 +297,7 @@ services:
       environment:
         EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka-server:8080/eureka
         EUREKA_INSTANCE_PREFER_IP_ADDRESS: "true"
-        SPRING_CLOUD_GATEWAY_DISCOVERY_LOCATOR_ENABLED: "true"
+        SPRING_CLOUD_GATEWAY_DISCOVERY_LOCATOR_ENABLED: "false"
         SPRING_CLOUD_GATEWAY_DISCOVERY_LOCATOR_LOWER_CASE_SERVICE_ID: "true"
       ports:
         - "8081:8081"
@@ -298,6 +311,51 @@ services:
         - rating-service
         - payment-service
 
+  kibana:
+    image: kibana:8.9.0
+    ports:
+      - 5601:5601
+    environment:
+      ELASTICSEARCH_HOSTS: "http://elasticsearch:9200"
+    networks:
+      - my_network
+
+  elasticsearch:
+    image: elasticsearch:8.9.0
+    environment:
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+      - xpack.security.enabled=false
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
+    networks:
+      - my_network
+
+  logstash:
+    image: logstash:8.9.0
+    ports:
+      - 5044:5044
+    volumes:
+      - ./logstash/pipeline:/usr/share/logstash/pipeline
+    networks:
+      - my_network
+    depends_on:
+      - elasticsearch
+
+  zipkin:
+    image: openzipkin/zipkin
+    ports:
+      - "9411:9411"
+    networks:
+      - my_network
+    environment:
+      - STORAGE_TYPE=elasticsearch
+      - ES_HOSTS=elasticsearch:9200
+    depends_on:
+      - elasticsearch
+
 volumes:
   mongodb:
   pg1:
@@ -305,6 +363,8 @@ volumes:
   redis:
   pg4:
   pg3:
+  es_data:
+    driver: local
   keycloakdb:
 
 networks:

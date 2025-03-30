@@ -16,6 +16,7 @@
         <module>rides-service</module>
         <module>payment-service</module>
         <module>rating-service</module>
+        <module>common</module>
     </modules>
 
     <properties>

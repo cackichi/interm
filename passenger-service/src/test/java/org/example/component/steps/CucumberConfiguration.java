@@ -2,12 +2,7 @@ package org.example.component.steps;
 
 import io.cucumber.spring.CucumberContextConfiguration;
 import org.example.PassengerServiceApplication;
-import org.example.dto.TravelEvent;
-import org.example.repositories.PassengerRepo;
-import org.modelmapper.ModelMapper;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;

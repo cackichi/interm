@@ -2,7 +2,7 @@ package org.example.services;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.example.dto.RideDTO;
 import org.example.dto.RidePageDTO;
 import org.example.dto.TravelEvent;
@@ -21,52 +21,61 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
+@Slf4j
 @Service
 @AllArgsConstructor
-@Log4j2
-public class RideServiceImpl implements RideService{
+public class RideServiceImpl implements RideService {
     private final RideRepository rideRepository;
     private final ModelMapper modelMapper;
     private final KafkaTemplate<String, TravelEvent> kafkaTemplate;
 
     @Override
-    public Ride mapToRide(RideDTO rideDTO){
+    public Ride mapToRide(RideDTO rideDTO) {
         return modelMapper.map(rideDTO, Ride.class);
     }
 
     @Override
-    public RideDTO mapToDTO(Ride ride){
+    public RideDTO mapToDTO(Ride ride) {
         return modelMapper.map(ride, RideDTO.class);
     }
 
     @Override
-    public RideDTO create(RideDTO rideDTO){
+    public RideDTO create(RideDTO rideDTO) {
         rideDTO.setStatus(Status.WAITING);
-        return mapToDTO(rideRepository.save(mapToRide(rideDTO)));
+        Ride savedRide = rideRepository.save(mapToRide(rideDTO));
+        log.debug("Created new ride with id: {}", savedRide.getId());
+        return mapToDTO(savedRide);
     }
 
     @Override
     @Transactional
-    public void softDelete(Long id){
+    public void softDelete(Long id) {
+        log.info("Soft deleting ride with id: {}", id);
         rideRepository.softDelete(id);
     }
 
     @Override
     @Transactional
-    public void update(Long id, RideDTO rideDTO){
+    public void update(Long id, RideDTO rideDTO) {
+        log.info("Updating ride with id: {}", id);
         int i = rideRepository.update(id, rideDTO.getPointA(), rideDTO.getPointB());
-        if(i == 0) throw new EntityNotFoundException("Поездка с таким номером не найдена");
+        if (i == 0) {
+            log.error("Ride not found with id: {}", id);
+            throw new EntityNotFoundException("Поездка с таким номером не найдена");
+        }
     }
 
     @Override
     @Transactional
-    public void hardDelete(Long id){
+    public void hardDelete(Long id) {
+        log.info("Hard deleting ride with id: {}", id);
         rideRepository.deleteById(id);
     }
 
     @Override
-    public RidePageDTO findAllNotDeleted(Pageable pageable){
-        List<Ride> rides =  rideRepository.findAllNotDeleted();
+    public RidePageDTO findAllNotDeleted(Pageable pageable) {
+        log.debug("Fetching all not deleted rides, page: {}, size: {}", pageable.getPageNumber(), pageable.getPageSize());
+        List<Ride> rides = rideRepository.findAllNotDeleted();
         int totalRides = rides.size();
         int start = Math.toIntExact(pageable.getOffset());
         int end = Math.min(start + pageable.getPageSize(), totalRides);
@@ -85,19 +94,29 @@ public class RideServiceImpl implements RideService{
     }
 
     @Override
-    public RideDTO findById(Long id){
+    public RideDTO findById(Long id) {
+        log.debug("Looking for ride with id: {}", id);
         Optional<Ride> ride = rideRepository.findById(id);
-        return ride.map(this::mapToDTO).orElseThrow(() -> new EntityNotFoundException("Поездка не найдена по id: " + id));
+        return ride.map(this::mapToDTO)
+                .orElseThrow(() -> {
+                    log.error("Ride not found with id: {}", id);
+                    return new EntityNotFoundException("Поездка не найдена по id: " + id);
+                });
     }
 
     @Override
     public void checkFreeRide(String driverId) throws NoWaitingRideException {
+        log.debug("Checking free ride for driver: {}", driverId);
         Long rideId = rideRepository.getOneWait();
-        if(rideId == null) throw new NoWaitingRideException("Нет ни одной ожидающей поездки");
+        if(rideId == null) {
+            log.warn("No waiting rides available");
+            throw new NoWaitingRideException("Нет ни одной ожидающей поездки");
+        }
         else {
             TravelEvent travelEvent = new TravelEvent();
             travelEvent.setRideId(rideId);
             travelEvent.setDriverId(driverId);
+            log.info("Sending check-driver event for ride: {}, driver: {}", rideId, driverId);
             CompletableFuture<SendResult<String, TravelEvent>> future = kafkaTemplate.send("check-driver-event-topic", driverId, travelEvent);
             future.whenComplete((result, exception) -> {
                 if(exception != null) log.error("Fatal error of check-driver-event-topic: {}", exception.getMessage());
@@ -108,15 +127,20 @@ public class RideServiceImpl implements RideService{
 
     @Override
     @Transactional
-    public void updateStatus(Long rideId, Status status){
+    public void updateStatus(Long rideId, Status status) {
+        log.info("Updating status for ride {} to {}", rideId, status);
         rideRepository.updateStatus(rideId, status);
     }
 
     @Override
     @Transactional
     public void stopTravel(String driverId, double passengerRating, double costOfRide) {
+        log.info("Stopping travel for driver: {}", driverId);
         Optional<Ride> optionalRide = rideRepository.findAfterStopTravel(driverId);
-        if(optionalRide.isEmpty()) throw new EntityNotFoundException("У водителя нет действующей поездок");
+        if(optionalRide.isEmpty()) {
+            log.error("No active ride found for driver: {}", driverId);
+            throw new EntityNotFoundException("У водителя нет действующей поездок");
+        }
         else {
             Ride ride = optionalRide.get();
             TravelEvent travelEvent = TravelEvent.builder()
@@ -126,6 +150,7 @@ public class RideServiceImpl implements RideService{
                     .passengerId(ride.getPassengerId())
                     .ratingForPassenger(passengerRating)
                     .build();
+            log.info("Sending stop-travel event for ride: {}", ride.getId());
             CompletableFuture<SendResult<String, TravelEvent>> future =
                     kafkaTemplate.send("stop-travel-event-topic", String.valueOf(ride.getId()), travelEvent);
             future.whenComplete((result, exception) -> {
@@ -140,8 +165,12 @@ public class RideServiceImpl implements RideService{
 
     @Override
     @Transactional
-    public void attachDriver(String driverId, Long rideId){
+    public void attachDriver(String driverId, Long rideId) {
+        log.info("Attaching driver {} to ride {}", driverId, rideId);
         int i = rideRepository.attachDriver(driverId, rideId);
-        if(i == 0) throw new EntityNotFoundException("Поездка не найдена");
+        if (i == 0) {
+            log.error("Failed to attach driver {} to ride {}", driverId, rideId);
+            throw new EntityNotFoundException("Поездка не найдена");
+        }
     }
 }
