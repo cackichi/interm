@@ -12,11 +12,11 @@ import java.util.Optional;
 public class KafkaConsumer {
     private Map<String, TravelEvent> map = new HashMap<>();
 
-    @KafkaListener(topics = "check-driver-event-topic")
+    @KafkaListener(topics = "check-driver-event-topic", concurrency = "4")
     public void handleCheckDriver(TravelEvent travelEvent) {
         processMessage("check-driver-event-topic", travelEvent);
     }
-    @KafkaListener(topics = "stop-travel-event-topic")
+    @KafkaListener(topics = "stop-travel-event-topic", concurrency = "2")
     public void handleStopTravel(TravelEvent travelEvent) {
         processMessage("stop-travel-event-topic", travelEvent);
     }

@@ -113,7 +113,7 @@ public class RideServiceSteps {
     @When("I find all not deleted rides")
     public void iFindAllNotDeletedRides() {
         Pageable pageable = PageRequest.of(0, 5);
-        ridePageDTO = rideService.findAllNotDeleted(pageable);
+        ridePageDTO = rideService.findAllNotDeleted(pageable, 6);
     }
 
     @Then("I should get a paginated list of rides")

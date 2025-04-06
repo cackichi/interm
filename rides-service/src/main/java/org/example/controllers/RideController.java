@@ -64,10 +64,11 @@ public class RideController {
     @Operation(summary = "Список поездок", description = "Позволяет найти все поездки с пагианцией")
     public ResponseEntity<RidePageDTO> findAll(
             @RequestParam(value = "page", defaultValue = "0") @Parameter(description = "Номер страницы пагинации") int page,
-            @RequestParam(value = "size", defaultValue = "10") @Parameter(description = "Размер пагинации") int size
+            @RequestParam(value = "size", defaultValue = "10") @Parameter(description = "Размер пагинации") int size,
+            @RequestParam(value = "total", defaultValue = "5") @Parameter(description = "Если взять больше 5 то будет браться не из кеша") int total
     ) {
         Pageable pageable = PageRequest.of(page, size);
-        return ResponseEntity.ok(rideService.findAllNotDeleted(pageable));
+        return ResponseEntity.ok(rideService.findAllNotDeleted(pageable, total));
     }
 
     @PatchMapping("/start/{driverId}")

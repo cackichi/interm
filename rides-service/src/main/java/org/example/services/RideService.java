@@ -14,7 +14,7 @@ public interface RideService {
     void softDelete(Long id);
     void update(Long id, RideDTO rideDTO);
     void hardDelete(Long id);
-    RidePageDTO findAllNotDeleted(Pageable pageable);
+    RidePageDTO findAllNotDeleted(Pageable pageable, int total);
     RideDTO findById(Long id);
     void checkFreeRide(String driverId) throws NoWaitingRideException;
     void updateStatus(Long rideId, Status status);

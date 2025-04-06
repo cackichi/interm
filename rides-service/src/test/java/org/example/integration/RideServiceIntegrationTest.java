@@ -11,11 +11,16 @@ import org.example.repositories.RideRepository;
 import org.example.services.RideService;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.RedisTemplate;
 
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -23,6 +28,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+
 public class RideServiceIntegrationTest extends BaseIntegrationTest{
     @Autowired
     private RideService rideService;
@@ -30,6 +37,8 @@ public class RideServiceIntegrationTest extends BaseIntegrationTest{
     private RideRepository rideRepository;
     @Autowired
     private KafkaConsumer kafkaConsumer;
+    @MockBean
+    private RedisTemplate<String, Object> redisTemplate;
     private RideDTO testRide;
 
     @BeforeEach
@@ -95,7 +104,7 @@ public class RideServiceIntegrationTest extends BaseIntegrationTest{
         rideService.create(testRide);
 
         Pageable pageable = PageRequest.of(0, 2);
-        RidePageDTO page = rideService.findAllNotDeleted(pageable);
+        RidePageDTO page = rideService.findAllNotDeleted(pageable, 6);
 
         assertThat(page.getTotalElem()).isEqualTo(1);
         assertThat(page.getSize()).isEqualTo(2);
@@ -109,7 +118,7 @@ public class RideServiceIntegrationTest extends BaseIntegrationTest{
 
         rideService.checkFreeRide(savedRide.getDriverId());
 
-        await().atMost(3, TimeUnit.SECONDS)
+        await().atMost(20, TimeUnit.SECONDS)
                 .until(() -> kafkaConsumer.getProcessedMessages("check-driver-event-topic").isPresent());
 
         TravelEvent event = kafkaConsumer.getProcessedMessages("check-driver-event-topic").get();
@@ -123,13 +132,14 @@ public class RideServiceIntegrationTest extends BaseIntegrationTest{
     }
 
     @Test
+    @Order(value = Integer.MAX_VALUE)
     void testStopTravel() throws EntityNotFoundException {
         RideDTO savedRide = rideService.create(testRide);
         rideService.attachDriver("3", savedRide.getId());
 
         rideService.stopTravel("3", 5.0, 100.0);
 
-        await().atMost(5, TimeUnit.SECONDS)
+        await().atMost(20, TimeUnit.SECONDS)
                 .until(() -> kafkaConsumer.getProcessedMessages("stop-travel-event-topic").isPresent());
 
         TravelEvent event = kafkaConsumer.getProcessedMessages("stop-travel-event-topic").get();

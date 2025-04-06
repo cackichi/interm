@@ -15,9 +15,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.kafka.core.KafkaTemplate;
 
 import java.util.List;
@@ -36,6 +38,8 @@ public class RideServiceTest {
     private KafkaTemplate<String, TravelEvent> kafkaTemplate;
     @Mock
     private ModelMapper modelMapper;
+    @Mock
+    private RedisTemplate<String, Object> redisTemplate;
     @Mock
     private Tracer tracer;
     @InjectMocks
@@ -117,7 +121,7 @@ public class RideServiceTest {
         List<Ride> rides = List.of(ride);
         when(rideRepository.findAllNotDeleted())
                 .thenReturn(rides);
-        RidePageDTO ridePageDTO = rideService.findAllNotDeleted(PageRequest.of(0, 10));
+        RidePageDTO ridePageDTO = rideService.findAllNotDeleted(PageRequest.of(0, 10), 6);
         assertThat(ridePageDTO.getNumber()).isEqualTo(0);
         assertThat(ridePageDTO.getTotalPages()).isEqualTo(1);
         assertThat(ridePageDTO.getSize()).isEqualTo(10);

@@ -8,7 +8,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.kafka.ConfluentKafkaContainer;
 import org.testcontainers.utility.DockerImageName;
 
-@SpringBootTest
+@SpringBootTest(properties = "spring.data.redis.repositories.enabled=false")
 @Testcontainers
 public abstract class BaseIntegrationTest {
     static PostgreSQLContainer<?> database = new PostgreSQLContainer<>("postgres:latest")

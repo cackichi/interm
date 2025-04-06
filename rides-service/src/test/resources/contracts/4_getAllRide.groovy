@@ -9,6 +9,7 @@ Contract.make {
             queryParameters {
                 parameter 'page': '0'
                 parameter 'size': '10'
+                parameter 'total': '6'
             }
         }
     }

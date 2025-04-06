@@ -51,8 +51,11 @@ services:
       KC_DB_USERNAME: fedor
       KC_DB_PASSWORD: fedor
 
+      KC_HTTP_PORT: 7070
+      KC_HTTP_ENABLED: true
+      KC_HTTPS_ENABLED: false
+
       KC_HOSTNAME: localhost
-      KC_HOSTNAME_PORT: 7070
       KC_HOSTNAME_STRICT: false
       KC_HOSTNAME_STRICT_HTTPS: false
 
@@ -73,7 +76,7 @@ services:
     image: postgres
     container_name: keycloakdb
     volumes:
-      - ./.keycloak:/var/lib/postgresql3/data
+      - keycloak_db_data:/var/lib/postgresql/data
     environment:
       POSTGRES_DB: keycloakdb
       POSTGRES_USER: fedor
@@ -110,7 +113,7 @@ services:
       - REDIS_USER=fedor
       - REDIS_USER_PASSWORD=fedor
     ports:
-      - "6380:6379"
+      - "6379:6379"
     volumes:
       - ./redisdata:/data
     deploy:
@@ -193,6 +196,8 @@ services:
       - logstash
       - zipkin
       - elasticsearch
+      - keycloak
+      - keycloakdb
 
   driver-service:
       build:
@@ -210,12 +215,26 @@ services:
         SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9090
         ZIPKIN_HOST: http://zipkin:9411
         ELASTIC_HOST: http://elasticsearch:9200
+        KEYCLOAK_HOST: keycloak
         EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka-server:8080/eureka
       networks:
         - my_network
       depends_on:
         - eureka-server
         - mongodb
+
+  auth-service:
+    build:
+      context: ./auth-service
+      dockerfile: Dockerfile
+    container_name: auth-service
+    environment:
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka-server:8080/eureka
+      KEYCLOAK_HOST: keycloak
+    networks:
+      - my_network
+    depends_on:
+      - eureka-server
 
   passenger-service:
       build:
@@ -227,6 +246,7 @@ services:
         SPRING_DATASOURCE_USERNAME: fedor
         SPRING_DATASOURCE_PASSWORD: fedor
         SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9090
+        KEYCLOAK_HOST: keycloak
         ZIPKIN_HOST: http://zipkin:9411
         ELASTIC_HOST: http://elasticsearch:9200
         EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka-server:8080/eureka
@@ -246,6 +266,7 @@ services:
         SPRING_DATASOURCE_PASSWORD: fedor
         SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9090
         ZIPKIN_HOST: http://zipkin:9411
+        KEYCLOAK_HOST: keycloak
         ELASTIC_HOST: http://elasticsearch:9200
         EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka-server:8080/eureka
       networks:
@@ -263,6 +284,7 @@ services:
         SPRING_DATASOURCE_USERNAME: fedor
         SPRING_DATASOURCE_PASSWORD: fedor
         SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9090
+        KEYCLOAK_HOST: keycloak
         ZIPKIN_HOST: http://zipkin:9411
         ELASTIC_HOST: http://elasticsearch:9200
         EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka-server:8080/eureka
@@ -282,6 +304,7 @@ services:
         SPRING_DATASOURCE_PASSWORD: fedor
         SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9090
         ZIPKIN_HOST: http://zipkin:9411
+        KEYCLOAK_HOST: keycloak
         ELASTIC_HOST: http://elasticsearch:9200
         EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka-server:8080/eureka
       networks:
@@ -365,7 +388,7 @@ volumes:
   pg3:
   es_data:
     driver: local
-  keycloakdb:
+  keycloak_db_data:
 
 networks:
   my_network:

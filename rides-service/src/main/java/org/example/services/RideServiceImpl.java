@@ -12,11 +12,16 @@ import org.example.exceptions.NoWaitingRideException;
 import org.example.repositories.RideRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -28,6 +33,7 @@ public class RideServiceImpl implements RideService {
     private final RideRepository rideRepository;
     private final ModelMapper modelMapper;
     private final KafkaTemplate<String, TravelEvent> kafkaTemplate;
+    private final RedisTemplate<String, Object> redisTemplate;
 
     @Override
     public Ride mapToRide(RideDTO rideDTO) {
@@ -73,9 +79,32 @@ public class RideServiceImpl implements RideService {
     }
 
     @Override
-    public RidePageDTO findAllNotDeleted(Pageable pageable) {
+    public RidePageDTO findAllNotDeleted(Pageable pageable, int total) {
+        List<Ride> rides;
+        if(total <= 5) {
+            rides = (List<Ride>) redisTemplate.opsForValue().get("rides");
+            if (rides == null){
+                rides = rideRepository.findAllNotDeleted();
+
+                int cacheSize = Math.min(rides.size(), 5);
+                List<Ride> ridesToCache = cacheSize > 0 ? new ArrayList<>(rides.subList(0, cacheSize)) : Collections.emptyList();
+
+                if (!ridesToCache.isEmpty()) {
+                    log.debug("Set rides to cache");
+                    redisTemplate.opsForValue().set(
+                            "rides",
+                            ridesToCache,
+                            Duration.ofMinutes(1)
+                    );
+                }
+            } else {
+                log.debug("The rides were taken from cache");
+            }
+        } else {
+            log.debug("Wanted total rides more than 5, therefore the data is taken from the database");
+            rides = rideRepository.findAllNotDeleted();
+        }
         log.debug("Fetching all not deleted rides, page: {}, size: {}", pageable.getPageNumber(), pageable.getPageSize());
-        List<Ride> rides = rideRepository.findAllNotDeleted();
         int totalRides = rides.size();
         int start = Math.toIntExact(pageable.getOffset());
         int end = Math.min(start + pageable.getPageSize(), totalRides);

@@ -2,3 +2,5 @@ org.example.kafka.KafkaConfig
 org.example.kafka.KafkaConsumerConfig
 org.example.kafka.KafkaProducerConfig
 org.example.mapper.ModelMapperCfg
+org.example.security.SecurityCfg
+org.example.swagger.SwaggerConfig

@@ -2,6 +2,8 @@ package org.example.endtoend.steps;
 
 import io.cucumber.spring.CucumberContextConfiguration;
 import org.example.RidesServiceApplication;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -20,6 +22,7 @@ import org.testcontainers.utility.DockerImageName;
                 "eureka.client.fetch-registry=false"
         }
 )
+@EnableAutoConfiguration(exclude= SecurityAutoConfiguration.class)
 public class CucumberConfig {
     @Container
     static PostgreSQLContainer<?> database = new PostgreSQLContainer<>("postgres:latest")

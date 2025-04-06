@@ -36,10 +36,16 @@ spring:
           enabled: false
           lower-case-service-id: true
       routes:
+        - id: auth-service
+          uri: lb://auth-service
+          predicates:
+            - Path=/auth-service/**
+          filters:
+            - RewritePath=/auth-service/(?<path>.*), /$\{path}
         - id: passenger-service
           uri: lb://passenger-service
           predicates:
-            - Path=/passenger-service/api/v1/passenger/**
+            - Path=/passenger-service/**
           filters:
             - RewritePath=/passenger-service/(?<path>.*), /$\{path}
             - name: CircuitBreaker
@@ -50,7 +56,7 @@ spring:
         - id: driver-service
           uri: lb://driver-service
           predicates:
-            - Path=/driver-service/api/v1/drivers/**
+            - Path=/driver-service/**
           filters:
             - RewritePath=/driver-service/(?<path>.*), /$\{path}
             - name: CircuitBreaker
@@ -61,7 +67,7 @@ spring:
         - id: rides-service
           uri: lb://rides-service
           predicates:
-            - Path=/rides-service/api/v1/rides/**
+            - Path=/rides-service/**
           filters:
             - RewritePath=/rides-service/(?<path>.*), /$\{path}
             - name: CircuitBreaker
@@ -72,7 +78,7 @@ spring:
         - id: payment-service
           uri: lb://payment-service
           predicates:
-            - Path=/payment-service/api/v1/**
+            - Path=/payment-service/**
           filters:
             - RewritePath=/payment-service/(?<path>.*), /$\{path}
             - name: CircuitBreaker
@@ -83,7 +89,7 @@ spring:
         - id: rating-service
           uri: lb://rating-service
           predicates:
-            - Path=/rating-service/api/v1/rating/**
+            - Path=/rating-service/**
           filters:
             - RewritePath=/rating-service/(?<path>.*), /$\{path}
             - name: CircuitBreaker

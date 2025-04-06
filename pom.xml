@@ -17,6 +17,7 @@
         <module>payment-service</module>
         <module>rating-service</module>
         <module>common</module>
+        <module>auth-service</module>
     </modules>
 
     <properties>

@@ -6,6 +6,8 @@ import org.example.integration.BaseIntegrationTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.contract.verifier.messaging.boot.AutoConfigureMessageVerifier;
 import org.springframework.test.annotation.DirtiesContext;
@@ -16,6 +18,7 @@ import org.springframework.web.context.WebApplicationContext;
 @SpringBootTest(classes = RidesServiceApplication.class)
 @AutoConfigureMessageVerifier
 @DirtiesContext
+@EnableAutoConfiguration(exclude= SecurityAutoConfiguration.class)
 public class BaseContractClass extends BaseIntegrationTest {
     @Autowired
     protected WebApplicationContext context;

@@ -11,8 +11,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -28,6 +30,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class RideControllerTest {
     @Mock
     private RideServiceImpl rideService;
+    @Mock
+    private RedisTemplate<String, Object> redisTemplate;
     @InjectMocks
     private RideController rideController;
     private MockMvc mockMvc;
@@ -84,10 +88,10 @@ public class RideControllerTest {
     }
     @Test
     void findAll() throws Exception {
-        when(rideService.findAllNotDeleted(PageRequest.of(0, 10)))
+        when(rideService.findAllNotDeleted(PageRequest.of(0, 10), 6))
                 .thenReturn(new RidePageDTO(new ArrayList<>(), 0, 0, 10, 0));
 
-        mockMvc.perform(get("/api/v1/rides/"))
+        mockMvc.perform(get("/api/v1/rides?total=6"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.totalElem").value(0))
                 .andExpect(jsonPath("$.totalPages").value(0))
