@@ -1,0 +1,640 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongodb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongodb
+  template:
+    metadata:
+      labels:
+        app: mongodb
+    spec:
+      containers:
+        - name: mongodb
+          image: mongo:latest
+          envFrom:
+            - configMapRef:
+                name: common-env
+          ports:
+            - containerPort: 27017
+          volumeMounts:
+            - name: mongodb-data
+              mountPath: /data/db
+      volumes:
+        - name: mongodb-data
+          persistentVolumeClaim:
+            claimName: mongodb-pvc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongodb
+spec:
+  selector:
+    app: mongodb
+  ports:
+    - protocol: TCP
+      port: 27017
+      targetPort: 27017
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pg1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pg1
+  template:
+    metadata:
+      labels:
+        app: pg1
+    spec:
+      containers:
+        - name: pg1
+          image: postgres
+          envFrom:
+            - configMapRef:
+                name: common-env
+          env:
+            - name: POSTGRES_DB
+              value: "pg1"
+          ports:
+            - containerPort: 5432
+          volumeMounts:
+            - name: pg1-data
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: pg1-data
+          persistentVolumeClaim:
+            claimName: pg1-pvc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pg1
+spec:
+  selector:
+    app: pg1
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pg2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pg2
+  template:
+    metadata:
+      labels:
+        app: pg2
+    spec:
+      containers:
+        - name: pg2
+          image: postgres
+          envFrom:
+            - configMapRef:
+                name: common-env
+          env:
+            - name: POSTGRES_DB
+              value: "pg2"
+          ports:
+            - containerPort: 5432
+          volumeMounts:
+            - name: pg2-data
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: pg2-data
+          persistentVolumeClaim:
+            claimName: pg2-pvc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pg2
+spec:
+  selector:
+    app: pg2
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pg3
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pg3
+  template:
+    metadata:
+      labels:
+        app: pg3
+    spec:
+      containers:
+        - name: pg3
+          image: postgres
+          envFrom:
+            - configMapRef:
+                name: common-env
+          env:
+            - name: POSTGRES_DB
+              value: "pg3"
+          ports:
+            - containerPort: 5432
+          volumeMounts:
+            - name: pg3-data
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: pg3-data
+          persistentVolumeClaim:
+            claimName: pg3-pvc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pg3
+spec:
+  selector:
+    app: pg3
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pg4
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pg4
+  template:
+    metadata:
+      labels:
+        app: pg4
+    spec:
+      containers:
+        - name: pg4
+          image: postgres
+          envFrom:
+            - configMapRef:
+                name: common-env
+          env:
+            - name: POSTGRES_DB
+              value: "pg4"
+          ports:
+            - containerPort: 5432
+          volumeMounts:
+            - name: pg4-data
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: pg4-data
+          persistentVolumeClaim:
+            claimName: pg4-pvc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pg4
+spec:
+  selector:
+    app: pg4
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: keycloakdb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: keycloakdb
+  template:
+    metadata:
+      labels:
+        app: keycloakdb
+    spec:
+      containers:
+        - name: keycloakdb
+          image: postgres
+          envFrom:
+            - configMapRef:
+                name: common-env
+          env:
+            - name: POSTGRES_DB
+              value: "keycloakdb"
+          ports:
+            - containerPort: 5432
+          volumeMounts:
+            - name: keycloakdb-data
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: keycloakdb-data
+          persistentVolumeClaim:
+            claimName: keycloakdb-pvc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: keycloakdb
+spec:
+  selector:
+    app: keycloakdb
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: keycloak
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: keycloak
+  template:
+    metadata:
+      labels:
+        app: keycloak
+    spec:
+      containers:
+        - name: keycloak
+          image: quay.io/keycloak/keycloak:25.0.2
+          envFrom:
+            - configMapRef:
+                name: common-env
+          env:
+            - name: KC_DB
+              value: "postgres"
+            - name: KC_DB_URL
+              value: "jdbc:postgresql://keycloakdb:5432/keycloakdb"
+            - name: KC_HTTP_PORT
+              value: "7070"
+            - name: KC_HTTP_ENABLED
+              value: "true"
+            - name: KC_HTTPS_ENABLED
+              value: "false"
+            - name: KC_HOSTNAME
+              value: "http://keycloak:7070/"
+            - name: KC_HOSTNAME_BACKCHANNEL_DYNAMIC
+              value: "true"
+            - name: KC_HOSTNAME_STRICT
+              value: "false"
+            - name: KC_HOSTNAME_STRICT_HTTPS
+              value: "false"
+            - name: KC_LOG_LEVEL
+              value: "info"
+            - name: KC_METRICS_ENABLED
+              value: "true"
+            - name: KC_HEALTH_ENABLED
+              value: "true"
+          command: [ "/opt/keycloak/bin/kc.sh" ]
+          args: [ "start-dev" ]
+          ports:
+            - containerPort: 7070
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: keycloak
+spec:
+  type: LoadBalancer
+  selector:
+    app: keycloak
+  ports:
+    - protocol: TCP
+      port: 7070
+      targetPort: 7070
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kafka
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kafka
+  template:
+    metadata:
+      labels:
+        app: kafka
+    spec:
+      containers:
+        - name: kafka
+          image: bitnami/kafka:latest
+          env:
+            - name: KAFKA_CFG_NODE_ID
+              value: "1"
+            - name: KAFKA_KRAFT_CLUSTER_ID
+              value: "tLAFFbaIRKO2JNyRengxzQ"
+            - name: KAFKA_CFG_PROCESS_ROLES
+              value: "controller,broker"
+            - name: KAFKA_CFG_CONTROLLER_QUORUM_VOTERS
+              value: "1@kafka:9091"
+            - name: KAFKA_CFG_LISTENERS
+              value: "PLAINTEXT://:9090,CONTROLLER://:9091,EXTERNAL://:9092"
+            - name: KAFKA_CFG_ADVERTISED_LISTENERS
+              value: "PLAINTEXT://kafka:9090,EXTERNAL://kafka:9092"
+            - name: KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP
+              value: "CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT,PLAINTEXT:PLAINTEXT"
+            - name: KAFKA_CFG_CONTROLLER_LISTENER_NAMES
+              value: "CONTROLLER"
+            - name: KAFKA_CFG_INTER_BROKER_LISTENER_NAME
+              value: "PLAINTEXT"
+            - name: BITNAMI_DEBUG
+              value: "true"
+            - name: KAFKA_LOG_LEVEL
+              value: "DEBUG"
+          ports:
+            - containerPort: 9092
+          volumeMounts:
+            - name: kafka-data
+              mountPath: /bitnami/kafka
+      volumes:
+        - name: kafka-data
+          persistentVolumeClaim:
+            claimName: kafka-pvc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka
+spec:
+  selector:
+    app: kafka
+  ports:
+    - name: plaintext
+      port: 9090
+      targetPort: 9090
+    - name: controller
+      port: 9091
+      targetPort: 9091
+    - name: external
+      port: 9092
+      targetPort: 9092
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+        - name: redis
+          image: redis:latest
+          envFrom:
+            - configMapRef:
+                name: common-env
+          command:
+            - sh
+            - -c
+            - |
+              mkdir -p /usr/local/etc/redis &&
+              echo "bind 0.0.0.0" > /usr/local/etc/redis/redis.conf &&
+              echo "requirepass fedor" >> /usr/local/etc/redis/redis.conf &&
+              echo "appendonly yes" >> /usr/local/etc/redis/redis.conf &&
+              echo "appendfsync everysec" >> /usr/local/etc/redis/redis.conf &&
+              echo "user default on nopass ~* +@all" > /usr/local/etc/redis/users.acl &&
+              echo "user fedor on >fedor ~* +@all" >> /usr/local/etc/redis/users.acl &&
+              redis-server /usr/local/etc/redis/redis.conf --aclfile /usr/local/etc/redis/users.acl
+          ports:
+            - containerPort: 6379
+          volumeMounts:
+            - name: redis-data
+              mountPath: /data
+          resources:
+            limits:
+              cpu: "0.5"
+              memory: "512Mi"
+            requests:
+              cpu: "0.25"
+              memory: "256Mi"
+      volumes:
+        - name: redis-data
+          persistentVolumeClaim:
+            claimName: redis-pvc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+spec:
+  selector:
+    app: redis
+  ports:
+    - protocol: TCP
+      port: 6379
+      targetPort: 6379
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: elasticsearch
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: elasticsearch
+  template:
+    metadata:
+      labels:
+        app: elasticsearch
+    spec:
+      containers:
+        - name: elasticsearch
+          image: elasticsearch:8.9.0
+          env:
+            - name: discovery.type
+              value: "single-node"
+            - name: ES_JAVA_OPTS
+              value: "-Xms512m -Xmx512m"
+            - name: xpack.security.enabled
+              value: "false"
+          ports:
+            - containerPort: 9200
+          volumeMounts:
+            - name: es-data
+              mountPath: /usr/share/elasticsearch/data
+      volumes:
+        - name: es-data
+          persistentVolumeClaim:
+            claimName: elasticsearch-pvc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: elasticsearch
+spec:
+  selector:
+    app: elasticsearch
+  ports:
+    - protocol: TCP
+      port: 9200
+      targetPort: 9200
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zipkin
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: zipkin
+  template:
+    metadata:
+      labels:
+        app: zipkin
+    spec:
+      containers:
+        - name: zipkin
+          image: openzipkin/zipkin
+          env:
+            - name: STORAGE_TYPE
+              value: "elasticsearch"
+            - name: ES_HOSTS
+              value: "elasticsearch:9200"
+          ports:
+            - containerPort: 9411
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: zipkin
+spec:
+  selector:
+    app: zipkin
+  ports:
+    - protocol: TCP
+      port: 9411
+      targetPort: 9411
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: logstash
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: logstash
+  template:
+    metadata:
+      labels:
+        app: logstash
+    spec:
+      containers:
+        - name: logstash
+          image: logstash:8.9.0
+          ports:
+            - containerPort: 5044
+          volumeMounts:
+            - name: logstash-config
+              mountPath: /usr/share/logstash/pipeline/
+      volumes:
+        - name: logstash-config
+          configMap:
+            name: logstash-config
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: logstash
+spec:
+  selector:
+    app: logstash
+  ports:
+    - protocol: TCP
+      port: 5044
+      targetPort: 5044
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kibana
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kibana
+  template:
+    metadata:
+      labels:
+        app: kibana
+    spec:
+      containers:
+        - name: kibana
+          image: kibana:8.9.0
+          env:
+            - name: ELASTICSEARCH_HOSTS
+              value: "http://elasticsearch:9200"
+          ports:
+            - containerPort: 5601
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kibana
+spec:
+  type: LoadBalancer
+  selector:
+    app: kibana
+  ports:
+    - protocol: TCP
+      port: 5601
+      targetPort: 5601

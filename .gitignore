@@ -26,6 +26,7 @@ redisdata
 mongodb-data
 .pg3
 .pg4
+oauth-client
 
 ### Eclipse ###
 .apt_generated

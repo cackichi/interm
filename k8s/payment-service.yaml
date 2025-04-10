@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payment-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: payment-service
+  template:
+    metadata:
+      labels:
+        app: payment-service
+    spec:
+      containers:
+        - name: payment-service
+          image: cackichi/payment-service:v1
+          envFrom:
+            - configMapRef:
+                name: common-config
+          env:
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:postgresql://pg4:5432/pg4
+            - name: SPRING_DATASOURCE_USERNAME
+              value: fedor
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: fedor
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: payment-service
+spec:
+  selector:
+    app: payment-service
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080

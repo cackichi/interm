@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: passenger-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: passenger-service
+  template:
+    metadata:
+      labels:
+        app: passenger-service
+    spec:
+      containers:
+        - name: passenger-service
+          image: cackichi/passenger-service:v1
+          envFrom:
+            - configMapRef:
+                name: common-config
+          env:
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:postgresql://pg1:5432/pg1
+            - name: SPRING_DATASOURCE_USERNAME
+              value: fedor
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: fedor
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: passenger-service
+spec:
+  selector:
+    app: passenger-service
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080

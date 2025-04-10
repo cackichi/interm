@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rides-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rides-service
+  template:
+    metadata:
+      labels:
+        app: rides-service
+    spec:
+      containers:
+        - name: rides-service
+          image: cackichi/rides-service:v1
+          envFrom:
+            - configMapRef:
+                name: common-config
+          env:
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:postgresql://pg2:5432/pg2
+            - name: SPRING_DATASOURCE_USERNAME
+              value: fedor
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: fedor
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rides-service
+spec:
+  selector:
+    app: rides-service
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080

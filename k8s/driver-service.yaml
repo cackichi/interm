@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: driver-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: driver-service
+  template:
+    metadata:
+      labels:
+        app: driver-service
+    spec:
+      containers:
+        - name: driver-service
+          image: cackichi/driver-service:v1
+          envFrom:
+            - configMapRef:
+                name: common-config
+          env:
+            - name: SPRING_DATA_MONGODB_URI
+              value: "mongodb://fedor:fedor@mongodb:27017/drivers?authSource=admin"
+            - name: SPRING_DATA_MONGODB_HOST
+              value: "mongodb"
+            - name: SPRING_DATA_MONGODB_PORT
+              value: "27017"
+            - name: SPRING_DATA_MONGODB_USERNAME
+              value: "fedor"
+            - name: SPRING_DATA_MONGODB_PASSWORD
+              value: "fedor"
+            - name: SPRING_DATA_MONGODB_DATABASE
+              value: "drivers"
+            - name: SPRING_DATA_MONGODB_AUTHENTICATION_DATABASE
+              value: "admin"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: driver-service
+spec:
+  selector:
+    app: driver-service
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
