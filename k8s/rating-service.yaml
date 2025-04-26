@@ -14,13 +14,13 @@ spec:
     spec:
       containers:
         - name: rating-service
-          image: cackichi/rating-service:v1
+          image: cackichi/rating-service:v2
           envFrom:
             - configMapRef:
                 name: common-config
           env:
             - name: SPRING_DATASOURCE_URL
-              value: jdbc:postgresql://pg3:5432/pg3
+              value: jdbc:postgresql://pg:5432/pg3
             - name: SPRING_DATASOURCE_USERNAME
               value: fedor
             - name: SPRING_DATASOURCE_PASSWORD

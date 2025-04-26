@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: auth-service
-          image: cackichi/auth-service:v1
+          image: cackichi/auth-service:v2
           env:
             - name: EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE
               value: "http://eureka-server:8080/eureka"
@@ -31,6 +31,11 @@ spec:
   selector:
     app: auth-service
   ports:
-    - protocol: TCP
+    - name: http
+      protocol: TCP
       port: 8080
       targetPort: 8080
+    - name: metrics
+      protocol: TCP
+      port: 8083
+      targetPort: 8083

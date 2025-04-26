@@ -45,232 +45,44 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: pg1
+  name: pg
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: pg1
+      app: pg
   template:
     metadata:
       labels:
-        app: pg1
+        app: pg
     spec:
       containers:
-        - name: pg1
-          image: postgres
+        - name: pg
+          image: cackichi/pg:v1
           envFrom:
             - configMapRef:
                 name: common-env
           env:
-            - name: POSTGRES_DB
-              value: "pg1"
+            - name: POSTGRES_MULTIPLE_DATABASES
+              value: "pg1,pg2,pg3,pg4,keycloakdb"
           ports:
             - containerPort: 5432
           volumeMounts:
-            - name: pg1-data
+            - name: pg-data
               mountPath: /var/lib/postgresql/data
       volumes:
-        - name: pg1-data
+        - name: pg-data
           persistentVolumeClaim:
-            claimName: pg1-pvc
+            claimName: pg-pvc
 
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: pg1
+  name: pg
 spec:
   selector:
-    app: pg1
-  ports:
-    - protocol: TCP
-      port: 5432
-      targetPort: 5432
-
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: pg2
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: pg2
-  template:
-    metadata:
-      labels:
-        app: pg2
-    spec:
-      containers:
-        - name: pg2
-          image: postgres
-          envFrom:
-            - configMapRef:
-                name: common-env
-          env:
-            - name: POSTGRES_DB
-              value: "pg2"
-          ports:
-            - containerPort: 5432
-          volumeMounts:
-            - name: pg2-data
-              mountPath: /var/lib/postgresql/data
-      volumes:
-        - name: pg2-data
-          persistentVolumeClaim:
-            claimName: pg2-pvc
-
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: pg2
-spec:
-  selector:
-    app: pg2
-  ports:
-    - protocol: TCP
-      port: 5432
-      targetPort: 5432
-
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: pg3
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: pg3
-  template:
-    metadata:
-      labels:
-        app: pg3
-    spec:
-      containers:
-        - name: pg3
-          image: postgres
-          envFrom:
-            - configMapRef:
-                name: common-env
-          env:
-            - name: POSTGRES_DB
-              value: "pg3"
-          ports:
-            - containerPort: 5432
-          volumeMounts:
-            - name: pg3-data
-              mountPath: /var/lib/postgresql/data
-      volumes:
-        - name: pg3-data
-          persistentVolumeClaim:
-            claimName: pg3-pvc
-
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: pg3
-spec:
-  selector:
-    app: pg3
-  ports:
-    - protocol: TCP
-      port: 5432
-      targetPort: 5432
-
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: pg4
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: pg4
-  template:
-    metadata:
-      labels:
-        app: pg4
-    spec:
-      containers:
-        - name: pg4
-          image: postgres
-          envFrom:
-            - configMapRef:
-                name: common-env
-          env:
-            - name: POSTGRES_DB
-              value: "pg4"
-          ports:
-            - containerPort: 5432
-          volumeMounts:
-            - name: pg4-data
-              mountPath: /var/lib/postgresql/data
-      volumes:
-        - name: pg4-data
-          persistentVolumeClaim:
-            claimName: pg4-pvc
-
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: pg4
-spec:
-  selector:
-    app: pg4
-  ports:
-    - protocol: TCP
-      port: 5432
-      targetPort: 5432
-
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: keycloakdb
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: keycloakdb
-  template:
-    metadata:
-      labels:
-        app: keycloakdb
-    spec:
-      containers:
-        - name: keycloakdb
-          image: postgres
-          envFrom:
-            - configMapRef:
-                name: common-env
-          env:
-            - name: POSTGRES_DB
-              value: "keycloakdb"
-          ports:
-            - containerPort: 5432
-          volumeMounts:
-            - name: keycloakdb-data
-              mountPath: /var/lib/postgresql/data
-      volumes:
-        - name: keycloakdb-data
-          persistentVolumeClaim:
-            claimName: keycloakdb-pvc
-
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: keycloakdb
-spec:
-  selector:
-    app: keycloakdb
+    app: pg
   ports:
     - protocol: TCP
       port: 5432
@@ -301,7 +113,7 @@ spec:
             - name: KC_DB
               value: "postgres"
             - name: KC_DB_URL
-              value: "jdbc:postgresql://keycloakdb:5432/keycloakdb"
+              value: "jdbc:postgresql://pg:5432/keycloakdb"
             - name: KC_HTTP_PORT
               value: "7070"
             - name: KC_HTTP_ENABLED
@@ -521,6 +333,7 @@ spec:
     - protocol: TCP
       port: 9200
       targetPort: 9200
+
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -553,6 +366,7 @@ kind: Service
 metadata:
   name: zipkin
 spec:
+  type: LoadBalancer
   selector:
     app: zipkin
   ports:
@@ -638,3 +452,100 @@ spec:
     - protocol: TCP
       port: 5601
       targetPort: 5601
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prometheus
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: prometheus
+  template:
+    metadata:
+      labels:
+        app: prometheus
+    spec:
+      containers:
+        - name: prometheus
+          image: prom/prometheus
+          args:
+            - '--config.file=/etc/prometheus/prometheus.yml'
+          ports:
+            - containerPort: 9090
+          volumeMounts:
+            - name: prometheus-config
+              mountPath: /etc/prometheus/prometheus.yml
+              subPath: prometheus.yml
+            - name: prometheus-data
+              mountPath: /prometheus
+      volumes:
+        - name: prometheus-config
+          configMap:
+            name: prometheus-config
+        - name: prometheus-data
+          persistentVolumeClaim:
+            claimName: prometheus-pvc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: prometheus
+spec:
+  type: LoadBalancer
+  selector:
+    app: prometheus
+  ports:
+    - protocol: TCP
+      port: 9090
+      targetPort: 9090
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: grafana
+  template:
+    metadata:
+      labels:
+        app: grafana
+    spec:
+      containers:
+        - name: grafana
+          image: grafana/grafana
+          env:
+            - name: GF_SECURITY_ADMIN_USER
+              value: "admin"
+            - name: GF_SECURITY_ADMIN_PASSWORD
+              value: "admin"
+          ports:
+            - containerPort: 3000
+          volumeMounts:
+            - name: grafana-provisioning
+              mountPath: /etc/grafana/provisioning/
+      volumes:
+        - name: grafana-provisioning
+          persistentVolumeClaim:
+            claimName: grafana-pvc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana
+spec:
+  type: LoadBalancer
+  selector:
+    app: grafana
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 3000

@@ -14,13 +14,13 @@ spec:
     spec:
       containers:
         - name: payment-service
-          image: cackichi/payment-service:v1
+          image: cackichi/payment-service:v2
           envFrom:
             - configMapRef:
                 name: common-config
           env:
             - name: SPRING_DATASOURCE_URL
-              value: jdbc:postgresql://pg4:5432/pg4
+              value: jdbc:postgresql://pg:5432/pg4
             - name: SPRING_DATASOURCE_USERNAME
               value: fedor
             - name: SPRING_DATASOURCE_PASSWORD

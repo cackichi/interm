@@ -11,6 +11,7 @@ import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.kafka.support.serializer.JsonSerializer;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -29,7 +30,6 @@ public class KafkaProducerConfig {
         config.put(ProducerConfig.LINGER_MS_CONFIG, "0");
         config.put(ProducerConfig.REQUEST_TIMEOUT_MS_CONFIG, "10000");
         config.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, "true");
-
         return config;
     }
 

@@ -19,7 +19,7 @@ public class SecurityCfg {
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers("/api/v1/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/swagger-resources/*", "/v3/api-docs/**", "/api-docs/**").permitAll()
-                        .anyRequest().authenticated()
+                        .anyRequest().permitAll()
                 );
         return http.build();
     }

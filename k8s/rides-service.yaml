@@ -14,13 +14,13 @@ spec:
     spec:
       containers:
         - name: rides-service
-          image: cackichi/rides-service:v1
+          image: cackichi/rides-service:v2
           envFrom:
             - configMapRef:
                 name: common-config
           env:
             - name: SPRING_DATASOURCE_URL
-              value: jdbc:postgresql://pg2:5432/pg2
+              value: jdbc:postgresql://pg:5432/pg2
             - name: SPRING_DATASOURCE_USERNAME
               value: fedor
             - name: SPRING_DATASOURCE_PASSWORD
