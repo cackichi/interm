@@ -2,6 +2,8 @@ package org.example.handler;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.example.asepcts.KafkaHandler;
 import org.example.dto.TravelEvent;
 import org.example.exception.NonRetryableException;
 import org.example.exceptions.NotFoundException;
@@ -16,7 +18,9 @@ public class DriverEventHandler {
     private final DriverServiceImpl driverServiceImpl;
 
     @KafkaListener(topics = "stop-travel-event-topic")
-    public void handleStopTravel(TravelEvent travelEvent) {
+    @KafkaHandler
+    public void handleStopTravel(ConsumerRecord<String, TravelEvent> record) {
+        TravelEvent travelEvent = record.value();
         if(travelEvent.getDriverId() == null) {
             log.error("Driver ID is null in stop travel event");
             throw new NonRetryableException("Non retryable exception - driver id is null");
@@ -32,7 +36,9 @@ public class DriverEventHandler {
     }
 
     @KafkaListener(topics = "check-driver-event-topic")
-    public void handleStartTravel(TravelEvent travelEvent) {
+    @KafkaHandler
+    public void handleStartTravel(ConsumerRecord<String, TravelEvent> record) {
+        TravelEvent travelEvent = record.value();
         log.info("Processing check driver event: {}", travelEvent);
 
         if(travelEvent.getDriverId() == null) {

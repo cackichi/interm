@@ -4,6 +4,8 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.header.internals.RecordHeader;
 import org.example.dto.PassengerDTO;
 import org.example.dto.PassengerPageDTO;
 import org.example.dto.TravelEvent;
@@ -14,6 +16,8 @@ import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Pageable;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -122,7 +126,10 @@ public class PassengerServiceImpl implements PassengerService {
         travelEvent.setPassengerId(id);
         travelEvent.setPointA(pointA);
         travelEvent.setPointB(pointB);
-        CompletableFuture<SendResult<String, TravelEvent>> future = kafkaTemplate.send("order-taxi-event-topic", String.valueOf(id), travelEvent);
+
+        CompletableFuture<SendResult<String, TravelEvent>> future = kafkaTemplate
+                .send(generateProducerRecord("order-taxi-event-topic", travelEvent, id));
+
         future.whenComplete((result, exception) -> {
             if(exception != null){
                 log.error("Field to send message: {}", exception.getMessage());
@@ -141,7 +148,9 @@ public class PassengerServiceImpl implements PassengerService {
     public void createPassengerEvent(Long id){
         TravelEvent travelEvent = new TravelEvent();
         travelEvent.setPassengerId(id);
-        CompletableFuture<SendResult<String, TravelEvent>> future = kafkaTemplate.send("passenger-create-event-topic", String.valueOf(id), travelEvent);
+
+        CompletableFuture<SendResult<String, TravelEvent>> future = kafkaTemplate
+                .send(generateProducerRecord("passenger-create-event-topic", travelEvent, id));
 
         future.whenComplete((result, exception) -> {
             if(exception != null){
@@ -155,7 +164,9 @@ public class PassengerServiceImpl implements PassengerService {
     public void hardDeletePassengerEvent(Long id){
         TravelEvent travelEvent = new TravelEvent();
         travelEvent.setPassengerId(id);
-        CompletableFuture<SendResult<String, TravelEvent>> future = kafkaTemplate.send("passenger-hard-delete-event-topic", String.valueOf(id), travelEvent);
+
+        CompletableFuture<SendResult<String, TravelEvent>> future = kafkaTemplate
+                .send(generateProducerRecord("passenger-hard-delete-event-topic", travelEvent, id));
 
         future.whenComplete((result, exception) -> {
             if(exception != null){
@@ -169,7 +180,9 @@ public class PassengerServiceImpl implements PassengerService {
     public void softDeletePassengerEvent(Long id){
         TravelEvent travelEvent = new TravelEvent();
         travelEvent.setPassengerId(id);
-        CompletableFuture<SendResult<String, TravelEvent>> future = kafkaTemplate.send("passenger-soft-delete-event-topic", String.valueOf(id), travelEvent);
+
+        CompletableFuture<SendResult<String, TravelEvent>> future = kafkaTemplate
+                .send(generateProducerRecord("passenger-soft-delete-event-topic", travelEvent, id));
 
         future.whenComplete((result, exception) -> {
             if(exception != null){
@@ -183,5 +196,21 @@ public class PassengerServiceImpl implements PassengerService {
     @Transactional
     public void travelEventUpdate(Status newStatus, Long id){
         passengerRepo.updateBecauseOfTravel(newStatus, id);
+    }
+
+    @Override
+    public ProducerRecord<String, TravelEvent> generateProducerRecord(String topic, TravelEvent travelEvent, Long id){
+        Jwt jwt = (Jwt) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String accessToken = jwt.getTokenValue();
+
+        ProducerRecord<String, TravelEvent> record = new ProducerRecord<>(
+                topic,
+                String.valueOf(id),
+                travelEvent
+        );
+
+        record.headers().add(new RecordHeader("X-Access-Token", accessToken.getBytes()));
+
+        return record;
     }
 }

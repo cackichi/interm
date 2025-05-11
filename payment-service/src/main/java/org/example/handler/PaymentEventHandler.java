@@ -2,6 +2,8 @@ package org.example.handler;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.example.asepcts.KafkaHandler;
 import org.example.dto.PaymentDTO;
 import org.example.dto.TravelEvent;
 import org.example.exception.NonRetryableException;
@@ -16,7 +18,9 @@ public class PaymentEventHandler {
     private final PaymentService paymentService;
 
     @KafkaListener(topics = "stop-travel-event-topic")
-    public void createPaymentEvent(TravelEvent travelEvent) {
+    @KafkaHandler
+    public void createPaymentEvent(ConsumerRecord<String, TravelEvent> record) {
+        TravelEvent travelEvent = record.value();
         if (travelEvent.getPassengerId() == null) {
             log.error("Passenger id is null in payment event");
             throw new NonRetryableException("Non retryable passenger id = null");

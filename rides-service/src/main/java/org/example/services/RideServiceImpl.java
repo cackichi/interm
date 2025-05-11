@@ -3,6 +3,8 @@ package org.example.services;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.header.internals.RecordHeader;
 import org.example.dto.RideDTO;
 import org.example.dto.RidePageDTO;
 import org.example.dto.TravelEvent;
@@ -15,11 +17,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -145,8 +148,11 @@ public class RideServiceImpl implements RideService {
             TravelEvent travelEvent = new TravelEvent();
             travelEvent.setRideId(rideId);
             travelEvent.setDriverId(driverId);
+
             log.info("Sending check-driver event for ride: {}, driver: {}", rideId, driverId);
-            CompletableFuture<SendResult<String, TravelEvent>> future = kafkaTemplate.send("check-driver-event-topic", driverId, travelEvent);
+            CompletableFuture<SendResult<String, TravelEvent>> future = kafkaTemplate
+                    .send(generateProducerRecord("check-driver-event-topic", travelEvent, driverId));
+
             future.whenComplete((result, exception) -> {
                 if(exception != null) log.error("Fatal error of check-driver-event-topic: {}", exception.getMessage());
                 else log.info("Correct work check-driver-event-topic: {}", result);
@@ -180,8 +186,10 @@ public class RideServiceImpl implements RideService {
                     .ratingForPassenger(passengerRating)
                     .build();
             log.info("Sending stop-travel event for ride: {}", ride.getId());
-            CompletableFuture<SendResult<String, TravelEvent>> future =
-                    kafkaTemplate.send("stop-travel-event-topic", String.valueOf(ride.getId()), travelEvent);
+
+            CompletableFuture<SendResult<String, TravelEvent>> future = kafkaTemplate
+                    .send(generateProducerRecord("stop-travel-event-topic", travelEvent, String.valueOf(ride.getId())));
+
             future.whenComplete((result, exception) -> {
                 if(exception != null) log.error("Fatal error of stop-travel-event-topic: {}", exception.getMessage());
                 else {
@@ -190,6 +198,22 @@ public class RideServiceImpl implements RideService {
                 }
             });
         }
+    }
+
+    @Override
+    public ProducerRecord<String, TravelEvent> generateProducerRecord(String topic, TravelEvent travelEvent, String id){
+        Jwt jwt = (Jwt) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String accessToken = jwt.getTokenValue();
+
+        ProducerRecord<String, TravelEvent> record = new ProducerRecord<>(
+                topic,
+                id,
+                travelEvent
+        );
+
+        record.headers().add(new RecordHeader("X-Access-Token", accessToken.getBytes()));
+
+        return record;
     }
 
     @Override

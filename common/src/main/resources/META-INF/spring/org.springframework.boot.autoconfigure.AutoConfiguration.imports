@@ -4,3 +4,5 @@ org.example.kafka.KafkaProducerConfig
 org.example.mapper.ModelMapperCfg
 org.example.security.SecurityCfg
 org.example.swagger.SwaggerConfig
+org.example.security.KeycloakAutoConfiguration
+org.example.kafka.KafkaSecurityCfg

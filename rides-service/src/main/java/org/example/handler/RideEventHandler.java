@@ -2,6 +2,8 @@ package org.example.handler;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.example.asepcts.KafkaHandler;
 import org.example.dto.RideDTO;
 import org.example.dto.TravelEvent;
 import org.example.exception.NonRetryableException;
@@ -16,7 +18,9 @@ public class RideEventHandler {
     private final RideService rideService;
 
     @KafkaListener(topics = "driver-valid-event-topic")
-    public void handleAttachRide(TravelEvent travelEvent) {
+    @KafkaHandler
+    public void handleAttachRide(ConsumerRecord<String, TravelEvent> record) {
+        TravelEvent travelEvent = record.value();
         if (travelEvent.getRideId() == null || travelEvent.getDriverId() == null) {
             log.error("Driver or ride id is null in travel event");
             throw new NonRetryableException("Non retryable exception - driver or ride id is null");
@@ -32,7 +36,9 @@ public class RideEventHandler {
     }
 
     @KafkaListener(topics = "order-taxi-event-topic")
-    public void createRideAfterPassengerReq(TravelEvent travelEvent) {
+    @KafkaHandler
+    public void createRideAfterPassengerReq(ConsumerRecord<String, TravelEvent> record) {
+        TravelEvent travelEvent = record.value();
         RideDTO ride = RideDTO.builder()
                 .passengerId(travelEvent.getPassengerId())
                 .pointA(travelEvent.getPointA())

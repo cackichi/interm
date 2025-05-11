@@ -242,6 +242,7 @@ services:
       SPRING_DATASOURCE_PASSWORD: fedor
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9090
       ZIPKIN_HOST: http://zipkin:9411
+      REDIS_HOST: redis
       KEYCLOAK_HOST: keycloak
       ELASTIC_HOST: http://elasticsearch:9200
       EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka-server:8080/eureka
@@ -337,6 +338,18 @@ services:
     volumes:
       - ./grafana/prometheus.yml:/etc/prometheus/prometheus.yml
       - ./prometheus:/prometheus
+    networks:
+      - my_network
+
+  kafka-ui:
+    container_name: kafka-ui
+    image: provectuslabs/kafka-ui:latest
+    ports:
+      - 9990:8080
+    environment:
+      DYNAMIC_CONFIG_ENABLED: 'true'
+    depends_on:
+      - kafka
     networks:
       - my_network
 

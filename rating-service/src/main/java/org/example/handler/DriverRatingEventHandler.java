@@ -2,6 +2,8 @@ package org.example.handler;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.example.asepcts.KafkaHandler;
 import org.example.dto.TravelEvent;
 import org.example.exception.NonRetryableException;
 import org.example.services.DriverRatingService;
@@ -15,7 +17,9 @@ public class DriverRatingEventHandler {
     private final DriverRatingService driverRatingService;
 
     @KafkaListener(topics = "driver-create-event-topic")
-    public void createRatingEvent(TravelEvent travelEvent) {
+    @KafkaHandler
+    public void createRatingEvent(ConsumerRecord<String, TravelEvent> record) {
+        TravelEvent travelEvent = record.value();
         if (travelEvent.getDriverId() == null) {
             log.error("Driver id is null in create rating event");
             throw new NonRetryableException("Non retryable exception - driver id is null");
@@ -25,7 +29,9 @@ public class DriverRatingEventHandler {
     }
 
     @KafkaListener(topics = "driver-hard-delete-event-topic")
-    public void hardDeleteRatingEvent(TravelEvent travelEvent) {
+    @KafkaHandler
+    public void hardDeleteRatingEvent(ConsumerRecord<String, TravelEvent> record) {
+        TravelEvent travelEvent = record.value();
         if (travelEvent.getDriverId() == null) {
             log.error("Driver id is null in hard delete rating event");
             throw new NonRetryableException("Non retryable exception - driver id is null");
@@ -35,7 +41,9 @@ public class DriverRatingEventHandler {
     }
 
     @KafkaListener(topics = "driver-soft-delete-event-topic")
-    public void softDeleteRatingEvent(TravelEvent travelEvent) {
+    @KafkaHandler
+    public void softDeleteRatingEvent(ConsumerRecord<String, TravelEvent> record) {
+        TravelEvent travelEvent = record.value();
         if (travelEvent.getDriverId() == null) {
             log.error("Driver id is null in soft delete rating event");
             throw new NonRetryableException("Non retryable exception - driver id is null");

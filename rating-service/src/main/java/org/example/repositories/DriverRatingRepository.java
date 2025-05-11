@@ -25,7 +25,7 @@ public interface DriverRatingRepository extends JpaRepository<DriverRating, Stri
             "        rating_count = dr.rating_count + 1\n" +
             "WHEN NOT MATCHED THEN\n" +
             "    INSERT (driver_id, average_rating, rating_count)\n" +
-            "    VALUES (src.driverId, src.rating, 1)", nativeQuery = true)
+            "    VALUES (src.driverId, src.rating, 0)", nativeQuery = true)
     void updateRating(@Param("driverId") String id, @Param("rating") double rating);
 
     @Query("SELECT dr FROM DriverRating dr WHERE dr.deleted = false")

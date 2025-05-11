@@ -2,6 +2,8 @@ package org.example.services;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.header.internals.RecordHeader;
 import org.example.collections.Driver;
 import org.example.dto.DriverDTO;
 import org.example.dto.DriverPageDTO;
@@ -14,6 +16,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -154,8 +158,8 @@ public class DriverServiceImpl implements DriverService {
 
     @Override
     public void driverCreateEvent(String id){
-        CompletableFuture<SendResult<String, TravelEvent>> future = kafkaTemplate.send("driver-create-event-topic", id,new TravelEvent(id));
-
+        CompletableFuture<SendResult<String, TravelEvent>> future = kafkaTemplate
+                .send(generateProducerRecord("driver-create-event-topic", new TravelEvent(id), id));
         future.whenComplete((result, exception) -> {
             if(exception != null){
                 log.error("Field to send message: {}", exception.getMessage());
@@ -168,7 +172,8 @@ public class DriverServiceImpl implements DriverService {
     }
     @Override
     public void driverHardDeleteEvent(String id){
-        CompletableFuture<SendResult<String, TravelEvent>> future = kafkaTemplate.send("driver-hard-delete-event-topic", id, new TravelEvent(id));
+        CompletableFuture<SendResult<String, TravelEvent>> future = kafkaTemplate
+                .send(generateProducerRecord("driver-hard-delete-event-topic", new TravelEvent(id), id));
 
         future.whenComplete((result, exception) -> {
             if(exception != null){
@@ -180,7 +185,8 @@ public class DriverServiceImpl implements DriverService {
     }
     @Override
     public void driverSoftDeleteEvent(String id){
-        CompletableFuture<SendResult<String, TravelEvent>> future = kafkaTemplate.send("driver-soft-delete-event-topic", id, new TravelEvent(id));
+        CompletableFuture<SendResult<String, TravelEvent>> future = kafkaTemplate
+                .send(generateProducerRecord("driver-soft-delete-event-topic", new TravelEvent(id), id));
 
         future.whenComplete((result, exception) -> {
             if(exception != null){
@@ -197,7 +203,9 @@ public class DriverServiceImpl implements DriverService {
             TravelEvent travelEvent = new TravelEvent();
             travelEvent.setDriverId(driverId);
             travelEvent.setRideId(rideId);
-            CompletableFuture<SendResult<String, TravelEvent>> future = kafkaTemplate.send("driver-valid-event-topic", driverId, travelEvent);
+
+            CompletableFuture<SendResult<String, TravelEvent>> future = kafkaTemplate
+                    .send(generateProducerRecord("driver-valid-event-topic", travelEvent, driverId));
 
             future.whenComplete((result, exception) -> {
                 if(exception != null){
@@ -209,5 +217,21 @@ public class DriverServiceImpl implements DriverService {
         } catch (NotFoundException | BusyDriverException e) {
             log.error("Logic error: {}", e.getMessage());
         }
+    }
+
+    @Override
+    public ProducerRecord<String, TravelEvent> generateProducerRecord(String topic, TravelEvent travelEvent, String id){
+        Jwt jwt = (Jwt) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String accessToken = jwt.getTokenValue();
+
+        ProducerRecord<String, TravelEvent> record = new ProducerRecord<>(
+                topic,
+                id,
+                travelEvent
+        );
+
+        record.headers().add(new RecordHeader("X-Access-Token", accessToken.getBytes()));
+
+        return record;
     }
 }

@@ -1,7 +1,9 @@
 package org.example.services;
 
+import org.apache.kafka.clients.producer.ProducerRecord;
 import org.example.dto.PassengerDTO;
 import org.example.dto.PassengerPageDTO;
+import org.example.dto.TravelEvent;
 import org.example.entities.Passenger;
 import org.example.entities.Status;
 import org.springframework.data.domain.Pageable;
@@ -34,4 +36,6 @@ public interface PassengerService {
     void softDeletePassengerEvent(Long id);
 
     void travelEventUpdate(Status newStatus, Long id);
+
+    ProducerRecord<String, TravelEvent> generateProducerRecord(String topic, TravelEvent travelEvent, Long id);
 }
