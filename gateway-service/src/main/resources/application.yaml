@@ -1,0 +1,131 @@
+server:
+  port: 8081
+  forward-headers-strategy: framework
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8080/eureka
+
+resilience4j:
+  circuitbreaker:
+    metrics:
+      enabled: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+  endpoint:
+    health:
+      show-details: always
+  health:
+    circuitbreakers:
+      enabled: true
+
+spring:
+  application:
+    name: gateway-service
+  cloud:
+    gateway:
+      httpclient:
+        response-timeout: 1500ms
+      discovery:
+        locator:
+          enabled: false
+          lower-case-service-id: true
+      routes:
+        - id: auth-service
+          uri: lb://auth-service
+          predicates:
+            - Path=/auth-service/**
+          filters:
+            - RewritePath=/auth-service/(?<path>.*), /$\{path}
+        - id: passenger-service
+          uri: lb://passenger-service
+          predicates:
+            - Path=/passenger-service/**
+          filters:
+            - RewritePath=/passenger-service/(?<path>.*), /$\{path}
+            - name: CircuitBreaker
+              args:
+                name: passengerCircuitBreaker
+                fallbackUri: forward:/fallback/passenger
+
+        - id: driver-service
+          uri: lb://driver-service
+          predicates:
+            - Path=/driver-service/**
+          filters:
+            - RewritePath=/driver-service/(?<path>.*), /$\{path}
+            - name: CircuitBreaker
+              args:
+                name: driverCircuitBreaker
+                fallbackUri: forward:/fallback/drivers
+
+        - id: rides-service
+          uri: lb://rides-service
+          predicates:
+            - Path=/rides-service/**
+          filters:
+            - RewritePath=/rides-service/(?<path>.*), /$\{path}
+            - name: CircuitBreaker
+              args:
+                name: ridesCircuitBreaker
+                fallbackUri: forward:/fallback/rides
+
+        - id: payment-service
+          uri: lb://payment-service
+          predicates:
+            - Path=/payment-service/**
+          filters:
+            - RewritePath=/payment-service/(?<path>.*), /$\{path}
+            - name: CircuitBreaker
+              args:
+                name: paymentCircuitBreaker
+                fallbackUri: forward:/fallback/payment
+
+        - id: rating-service
+          uri: lb://rating-service
+          predicates:
+            - Path=/rating-service/**
+          filters:
+            - RewritePath=/rating-service/(?<path>.*), /$\{path}
+            - name: CircuitBreaker
+              args:
+                name: ratingCircuitBreaker
+                fallbackUri: forward:/fallback/rating
+
+resilience4j.circuitbreaker:
+  configs:
+    default:
+      timeoutDuration: 1500ms
+      registerHealthIndicator: true
+      slidingWindowSize: 10
+      minimumNumberOfCalls: 5
+      permittedNumberOfCallsInHalfOpenState: 3
+      automaticTransitionFromOpenToHalfOpenEnabled: true
+      waitDurationInOpenState: 5s
+      failureRateThreshold: 5
+      eventConsumerBufferSize: 10
+      slowCallDurationThreshold: 200ms
+      slowCallRateThreshold: 30
+      recordExceptions:
+        - java.util.concurrent.TimeoutException
+        - org.springframework.cloud.gateway.support.NotFoundException
+  instances:
+    passengerCircuitBreaker:
+      baseConfig: default
+    driverCircuitBreaker:
+      baseConfig: default
+    ridesCircuitBreaker:
+      baseConfig: default
+    paymentCircuitBreaker:
+      baseConfig: default
+    ratingCircuitBreaker:
+      baseConfig: default
+
+logging:
+  level:
+    io.github.resilience4j: TRACE

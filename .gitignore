@@ -13,15 +13,23 @@ target/
 .idea/jarRepositories.xml
 .idea/compiler.xml
 .idea/libraries/
+.idea/inspectionProfiles
 *.iws
 *.iml
 *.ipr
 
-.pg1
-.pg2
 .kafka
-.keycloak
 redisdata
+.mongodb
+mongodb-data
+.pg
+oauth-client
+prometheus
+grafana/csv
+grafana/pdf
+grafana/plugins
+grafana/png
+grafana/grafana.db
 
 ### Eclipse ###
 .apt_generated

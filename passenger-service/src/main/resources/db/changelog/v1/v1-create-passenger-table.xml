@@ -1,0 +1,40 @@
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
+
+    <changeSet id="v1-1" author="Razuvanau Fiodar">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="passenger"/>
+            </not>
+        </preConditions>
+
+        <createTable tableName="passenger">
+            <column name="id" type="bigint" autoIncrement="true" incrementBy="1" startWith="100">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="varchar(50)">
+            </column>
+            <column name="email" type="varchar(50)">
+            </column>
+            <column name="phone_number" type="varchar(50)">
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet id="v1-2" author="Razuvanau Fiodar">
+        <addColumn tableName="passenger">
+            <column name="deleted"
+                    type="boolean"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="v1-3" author="Razuvanau Fiodar">
+        <addColumn tableName="passenger">
+            <column name="status"
+                    type="varchar(10)"
+                    defaultValue="NOT_ACTIVE"/>
+        </addColumn>
+    </changeSet>
+
+</databaseChangeLog>

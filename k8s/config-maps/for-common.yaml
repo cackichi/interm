@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: common-env
+data:
+  POSTGRES_USER: "fedor"
+  POSTGRES_PASSWORD: "fedor"
+  MONGO_INITDB_ROOT_USERNAME: "fedor"
+  MONGO_INITDB_ROOT_PASSWORD: "fedor"
+  REDIS_PASSWORD: "fedor"
+  REDIS_USER: "fedor"
+  REDIS_USER_PASSWORD: "fedor"
+  KEYCLOAK_ADMIN: "fedor"
+  KEYCLOAK_ADMIN_PASSWORD: "fedor"
+  KC_DB_USERNAME: "fedor"
+  KC_DB_PASSWORD: "fedor"

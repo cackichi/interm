@@ -1,0 +1,38 @@
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
+
+    <changeSet id="v1-1" author="Razuvanau Fiodar">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="passenger_rating"/>
+                <tableExists tableName="driver_rating"/>
+            </not>
+        </preConditions>
+
+        <createTable tableName="passenger_rating">
+            <column name="passenger_id" type="bigint">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="average_rating" type="NUMERIC">
+            </column>
+            <column name="rating_count" type="bigint">
+            </column>
+            <column name="deleted" type="boolean" defaultValue="false">
+            </column>
+        </createTable>
+
+        <createTable tableName="driver_rating">
+            <column name="driver_id" type="bigint">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="average_rating" type="NUMERIC">
+            </column>
+            <column name="rating_count" type="bigint">
+            </column>
+            <column name="deleted" type="boolean" defaultValue="false">
+            </column>
+        </createTable>
+    </changeSet>
+</databaseChangeLog>
